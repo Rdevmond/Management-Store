@@ -98,7 +98,12 @@ export default function InventoryView({ controller }) {
 
   const filteredInventory = useMemo(() => {
     if (!searchQuery) return inventory;
-    const lower = searchQuery.toLowerCase();
+    const lower = searchQuery.trim().toLowerCase();
+    
+    if (lower === 'kritis') {
+      return inventory.filter(item => item.stock < item.minStock);
+    }
+
     return inventory.filter(item => 
       item.name.toLowerCase().includes(lower) ||
       item.unit.toLowerCase().includes(lower) ||

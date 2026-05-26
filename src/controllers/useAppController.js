@@ -40,6 +40,8 @@ export default function useAppController(navigate) {
   // Order Queue State
   const [orderQueue, setOrderQueue] = useState([]);
   const [nextOrderId, setNextOrderId] = useState(1);
+  const [editingOrderId, setEditingOrderId] = useState(null);
+  const [editingOldFinanceId, setEditingOldFinanceId] = useState(null);
 
   // Finance Date Filter
   const [startDate, setStartDate] = useState(() => {
@@ -422,16 +424,28 @@ export default function useAppController(navigate) {
     if (issues.length > 0) { triggerAlert('Stok bahan tidak mencukupi!', 'error'); return false; }
 
     const { updates, lowStockNames } = buildInventoryUpdates(cart, inventory);
-    const orderId = `TRX-${Date.now().toString().slice(-6)}`;
-    const financeLog = {
-      type: 'pemasukan',
-      amount: cartTotal,
-      description: `Penjualan Kasir: ${cart.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}`,
-      date: new Date().toISOString().split('T')[0],
-    };
+    
+    let finalFinanceLog;
+    if (editingOrderId) {
+      finalFinanceLog = {
+        id: editingOldFinanceId, // update the existing finance log directly
+        type: 'pemasukan',
+        amount: cartTotal,
+        description: `Penjualan Kasir (Diedit): ${cart.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}`,
+        date: new Date().toISOString().split('T')[0],
+      };
+    } else {
+      finalFinanceLog = {
+        type: 'pemasukan',
+        amount: cartTotal,
+        description: `Penjualan Kasir: ${cart.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}`,
+        date: new Date().toISOString().split('T')[0],
+      };
+    }
 
     try {
-      await apiCheckout({ inventoryUpdates: updates, financeLog });
+      const response = await apiCheckout({ inventoryUpdates: updates, financeLog: finalFinanceLog });
+      const returnedFinanceId = response.financeId;
 
       // Update local inventory state
       setInventory(prev => prev.map(inv => {
@@ -440,9 +454,11 @@ export default function useAppController(navigate) {
       }));
       await refreshFinance();
 
+      const targetId = editingOrderId ? `TRX-UB-${editingOrderId}` : `TRX-${Date.now().toString().slice(-6)}`;
+
       // Create receipt & add to queue as paid
       const receiptData = {
-        id: orderId,
+        id: targetId,
         cashier: activeUser?.username || 'Kasir',
         date: new Date().toLocaleString('id-ID'),
         items: [...cart],
@@ -456,8 +472,9 @@ export default function useAppController(navigate) {
       setCheckoutReceipt(receiptData);
 
       const newOrder = {
-        id: nextOrderId,
-        label: `Pesanan #${nextOrderId} (Lunas)`,
+        id: editingOrderId || nextOrderId,
+        financeId: returnedFinanceId || editingOldFinanceId,
+        label: `Pesanan #${editingOrderId || nextOrderId} (Lunas)`,
         items: [...cart],
         toppingPrice,
         subtotal: cartSubtotal,
@@ -465,9 +482,16 @@ export default function useAppController(navigate) {
         timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         status: 'paid',
       };
-      setOrderQueue(prev => [...prev, newOrder]);
-      setNextOrderId(prev => prev + 1);
+      
+      if (editingOrderId) {
+        setOrderQueue(prev => [...prev, newOrder]);
+      } else {
+        setOrderQueue(prev => [...prev, newOrder]);
+        setNextOrderId(prev => prev + 1);
+      }
 
+      setEditingOrderId(null);
+      setEditingOldFinanceId(null);
       setCart([]);
       setCashPaid('');
 
@@ -509,71 +533,32 @@ export default function useAppController(navigate) {
     setOrderQueue(prev => prev.filter(o => o.id !== orderId));
   };
 
-  // Process queued (unpaid) order → deduct stock + log finance → mark as paid
+  // Process queued (unpaid) order → pull to cart for payment
   const processOrder = async (orderId) => {
+    if (cart.length > 0) { triggerAlert('Kosongkan keranjang terlebih dahulu!', 'warning'); return false; }
     const order = orderQueue.find(o => o.id === orderId);
     if (!order) return false;
-    const issues = checkCartFeasibility(order.items, inventory);
-    if (issues.length > 0) { triggerAlert('Stok tidak cukup!', 'error'); return false; }
-
-    const { updates, lowStockNames } = buildInventoryUpdates(order.items, inventory);
-    const toppingTotal = order.items.reduce((acc, i) => {
-      const tops = Object.values(i.toppings).filter(Boolean).length;
-      return acc + tops * order.toppingPrice * i.quantity;
-    }, 0);
-    const total = order.subtotal + toppingTotal;
-    const financeLog = {
-      type: 'pemasukan',
-      amount: total,
-      description: `Penjualan Kasir: ${order.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}`,
-      date: new Date().toISOString().split('T')[0],
-    };
-
-    try {
-      await apiCheckout({ inventoryUpdates: updates, financeLog });
-      setInventory(prev => prev.map(inv => {
-        const u = updates.find(x => x.id === inv.id);
-        return u ? { ...inv, stock: u.stock } : inv;
-      }));
-      await refreshFinance();
-
-      setCheckoutReceipt({
-        id: `TRX-${Date.now().toString().slice(-6)}`,
-        cashier: activeUser?.username || 'Kasir',
-        date: new Date().toLocaleString('id-ID'),
-        items: order.items,
-        toppingPrice: order.toppingPrice,
-        subtotal: order.subtotal,
-        toppingTotal,
-        total,
-        cashPaid: total,
-        change: 0,
-      });
-      setOrderQueue(prev => prev.map(o => o.id === orderId
-        ? { ...o, status: 'paid', label: `${o.label} (Lunas)`, total }
-        : o));
-
-      if (lowStockNames.length > 0) {
-        triggerAlert(`Transaksi Sukses! Peringatan: Stok (${[...new Set(lowStockNames)].join(', ')}) menipis!`, 'warning');
-      } else {
-        triggerAlert('Transaksi berhasil diproses!', 'success');
-      }
-      return true;
-    } catch (err) {
-      triggerAlert(`Gagal memproses order: ${err.message}`, 'error');
-      return false;
-    }
+    
+    setCart(order.items);
+    setToppingPrice(order.toppingPrice);
+    setEditingOrderId(order.id);
+    setEditingOldFinanceId(null); // Unpaid means no previous finance record
+    setCashPaid('');
+    setOrderQueue(prev => prev.filter(o => o.id !== orderId));
+    triggerAlert('Pesanan ditarik ke keranjang. Silakan proses pembayaran.', 'info');
+    return true;
   };
 
   const completePaidOrder = (orderId) => {
-    setOrderQueue(prev => prev.filter(o => o.id !== orderId));
+    setOrderQueue(prev => prev.map(o => o.id === orderId ? { ...o, status: 'selesai', completedAt: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) } : o));
     triggerAlert('Pesanan selesai disajikan!', 'success');
   };
 
   const editPaidOrder = async (orderId) => {
+    if (cart.length > 0) { triggerAlert('Kosongkan keranjang terlebih dahulu!', 'warning'); return false; }
     const order = orderQueue.find(o => o.id === orderId);
     if (!order) return;
-    if (!window.confirm('Batalkan pembayaran dan kembalikan pesanan ke keranjang? Refund akan dicatat.')) return;
+    if (!window.confirm('Ubah pesanan? Stok akan dikembalikan ke gudang. Silakan bayar selisih harganya nanti.')) return;
 
     // Build restoration list
     const restorations = [];
@@ -587,23 +572,19 @@ export default function useAppController(navigate) {
       });
     });
 
-    const financeLog = {
-      type: 'pengeluaran',
-      amount: order.total,
-      description: `Refund POS #${order.id} (Ubah Pesanan)`,
-      date: new Date().toISOString().split('T')[0],
-    };
-
     try {
-      await apiRefund({ inventoryRestorations: restorations, financeLog });
+      await apiRefund({ inventoryRestorations: restorations, financeLog: null });
       await refreshInventory();
-      await refreshFinance();
+      
       setCart(order.items);
       setToppingPrice(order.toppingPrice);
+      setEditingOrderId(order.id);
+      setEditingOldFinanceId(order.financeId);
+      setCashPaid(order.total.toString());
       setOrderQueue(prev => prev.filter(o => o.id !== orderId));
-      triggerAlert('Pembayaran dibatalkan. Silakan ubah pesanan di keranjang.', 'info');
+      triggerAlert('Pesanan ditarik ke keranjang. Silakan ubah dan lanjutkan pembayaran.', 'info');
     } catch (err) {
-      triggerAlert(`Gagal refund: ${err.message}`, 'error');
+      triggerAlert(`Gagal mengubah pesanan: ${err.message}`, 'error');
     }
   };
 

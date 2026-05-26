@@ -272,11 +272,22 @@ app.post('/api/checkout', async (req, res) => {
   try {
     await conn.beginTransaction();
 
-    // 1. Insert finance record
-    const [finRes] = await conn.query(
-      'INSERT INTO finance (type, amount, description, date) VALUES (?, ?, ?, ?)',
-      [financeLog.type, financeLog.amount, financeLog.description, financeLog.date]
-    );
+    // 1. Insert or update finance record if provided
+    let finResId = financeLog?.id || null;
+    if (financeLog) {
+      if (financeLog.id) {
+        await conn.query(
+          'UPDATE finance SET type = ?, amount = ?, description = ?, date = ? WHERE id = ?',
+          [financeLog.type, financeLog.amount, financeLog.description, financeLog.date, financeLog.id]
+        );
+      } else {
+        const [finRes] = await conn.query(
+          'INSERT INTO finance (type, amount, description, date) VALUES (?, ?, ?, ?)',
+          [financeLog.type, financeLog.amount, financeLog.description, financeLog.date]
+        );
+        finResId = finRes.insertId;
+      }
+    }
 
     // 2. Deduct inventory stocks
     for (const u of inventoryUpdates) {
@@ -284,7 +295,7 @@ app.post('/api/checkout', async (req, res) => {
     }
 
     await conn.commit();
-    res.json({ success: true, financeId: finRes.insertId });
+    res.json({ success: true, financeId: finResId });
   } catch (err) {
     await conn.rollback();
     res.status(500).json({ error: err.message });
@@ -300,11 +311,13 @@ app.post('/api/refund', async (req, res) => {
   try {
     await conn.beginTransaction();
 
-    // 1. Insert refund finance record
-    await conn.query(
-      'INSERT INTO finance (type, amount, description, date) VALUES (?, ?, ?, ?)',
-      [financeLog.type, financeLog.amount, financeLog.description, financeLog.date]
-    );
+    // 1. Insert refund finance record if provided
+    if (financeLog) {
+      await conn.query(
+        'INSERT INTO finance (type, amount, description, date) VALUES (?, ?, ?, ?)',
+        [financeLog.type, financeLog.amount, financeLog.description, financeLog.date]
+      );
+    }
 
     // 2. Restore inventory stocks
     for (const u of inventoryRestorations) {

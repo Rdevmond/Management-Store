@@ -45,8 +45,7 @@ export default function FinanceView({ controller }) {
     setStartDate,
     endDate,
     setEndDate,
-    handleSaveExpense,
-    handleExportCSV
+    handleSaveFinance, handleExportCSV
   } = controller;
 
   // Tab: 'keuangan' | 'pemesanan' | 'pengeluaran'
@@ -58,9 +57,10 @@ export default function FinanceView({ controller }) {
   // Local state for Quick Date Period Select
   const [period, setPeriod] = useState('custom');
 
-  // Local state for Expense Form Modal
-  const [showExpenseModal, setShowExpenseModal] = useState(false);
-  const [expenseForm, setExpenseForm] = useState({
+  // Local state for Finance Form Modal
+  const [showFinanceModal, setShowFinanceModal] = useState(false);
+  const [financeForm, setFinanceForm] = useState({
+    type: 'pengeluaran',
     amount: '',
     description: '',
     date: new Date().toISOString().split('T')[0]
@@ -86,20 +86,21 @@ export default function FinanceView({ controller }) {
     }
   };
 
-  const onOpenAddExpense = () => {
-    setExpenseForm({
+  const onOpenAddFinance = (defaultType = 'pengeluaran') => {
+    setFinanceForm({
+      type: defaultType,
       amount: '',
       description: '',
       date: new Date().toISOString().split('T')[0]
     });
-    setShowExpenseModal(true);
+    setShowFinanceModal(true);
   };
 
-  const onSubmitExpense = (e) => {
+  const onSubmitFinance = (e) => {
     e.preventDefault();
-    const success = handleSaveExpense(expenseForm.amount, expenseForm.description, expenseForm.date);
+    const success = handleSaveFinance(financeForm.type, financeForm.amount, financeForm.description, financeForm.date);
     if (success) {
-      setShowExpenseModal(false);
+      setShowFinanceModal(false);
     }
   };
 
@@ -120,11 +121,18 @@ export default function FinanceView({ controller }) {
     if (!trimmedQuery) return filteredFinance;
     const tokens = trimmedQuery.toLowerCase().split(/\s+/).filter(Boolean);
     
+    const monthNames = ["januari", "februari", "maret", "april", "mei", "juni", "juli", "agustus", "september", "oktober", "november", "desember"];
+    
     return filteredFinance.filter(l => {
-      const dateObj = l.date ? new Date(l.date) : null;
-      const dayStr = dateObj ? dateObj.getDate().toString() : '';
-      const monthStr = dateObj ? dateObj.toLocaleString('id-ID', { month: 'long' }).toLowerCase() : '';
-      const yearStr = dateObj ? dateObj.getFullYear().toString() : '';
+      let dayStr = '', monthStr = '', yearStr = '';
+      if (l.date) {
+        const parts = l.date.split('-'); // format YYYY-MM-DD
+        if (parts.length === 3) {
+          yearStr = parts[0];
+          monthStr = monthNames[parseInt(parts[1], 10) - 1] || '';
+          dayStr = parseInt(parts[2], 10).toString();
+        }
+      }
       
       const searchableText = [
         l.description,
@@ -191,27 +199,25 @@ export default function FinanceView({ controller }) {
       current.setDate(current.getDate() + 1);
     }
     
-    return dateList.map(dateStr => {
-      let income = 0;
-      let expense = 0;
-      let orderCount = 0;
-      
-      filteredFinance.forEach(log => {
-        if (log.date === dateStr) {
-          if (log.type === 'pemasukan') {
-            income += log.amount;
-            if (log.description.includes('Penjualan POS')) {
-              orderCount++;
-            }
-          } else {
-            expense += log.amount;
-          }
+    // Pre-aggregate data for O(logs + dates) performance
+    const agg = {};
+    filteredFinance.forEach(log => {
+      if (!agg[log.date]) agg[log.date] = { income: 0, expense: 0, orderCount: 0 };
+      if (log.type === 'pemasukan') {
+        agg[log.date].income += log.amount;
+        if (log.description.includes('Penjualan Kasir')) {
+          agg[log.date].orderCount++;
         }
-      });
-      
+      } else {
+        agg[log.date].expense += log.amount;
+      }
+    });
+    
+    return dateList.map(dateStr => {
       const parts = dateStr.split('-');
       const label = `${parts[2]}/${parts[1]}`;
-      return { dateStr, label, income, expense, orderCount };
+      const data = agg[dateStr] || { income: 0, expense: 0, orderCount: 0 };
+      return { dateStr, label, income: data.income, expense: data.expense, orderCount: data.orderCount };
     });
   }, [filteredFinance, startDate, endDate]);
 
@@ -278,7 +284,7 @@ export default function FinanceView({ controller }) {
         ]
       };
     }
-  }, [dynamicChartData, activeTab, chartType]);
+  }, [dynamicChartData, activeTab, chartType, productTrends]);
 
   const chartOptions = useMemo(() => {
     return {
@@ -453,8 +459,15 @@ export default function FinanceView({ controller }) {
             <span>EKSPOR CSV</span>
           </button>
           <button
-            onClick={onOpenAddExpense}
+            onClick={() => onOpenAddFinance('pemasukan')}
             className="px-4 py-2.5 bg-[#108e50] hover:bg-[#0c6c3d] text-white font-semibold rounded-xl text-xs shadow-sm hover:shadow transition-all flex items-center gap-2"
+          >
+            <FiPlus className="text-sm" />
+            <span>CATAT PEMASUKAN</span>
+          </button>
+          <button
+            onClick={() => onOpenAddFinance('pengeluaran')}
+            className="px-4 py-2.5 bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold rounded-xl text-xs shadow-sm hover:shadow transition-all flex items-center gap-2"
           >
             <FiPlus className="text-sm" />
             <span>CATAT PENGELUARAN</span>
@@ -648,7 +661,7 @@ export default function FinanceView({ controller }) {
             {/* Quick add expense prompt */}
             <div className="px-6 py-4 bg-[#f8fafc] border-t border-slate-100 flex items-center justify-between">
               <p className="text-[10px] text-slate-400 font-medium">Catat pengeluaran baru seperti listrik, sewa, bahan dll.</p>
-              <button onClick={onOpenAddExpense}
+              <button onClick={() => onOpenAddFinance('pengeluaran')}
                 className="px-3 py-1.5 bg-[#e11d48] hover:bg-[#be123c] text-white text-[10px] font-bold rounded-lg flex items-center gap-1 transition-colors">
                 <FiPlus className="text-xs" /> Tambah Pengeluaran
               </button>
@@ -657,28 +670,36 @@ export default function FinanceView({ controller }) {
         )}
       </div>
 
-      {/* OPERATIONAL EXPENSE MODAL */}
-      {showExpenseModal && (
+      {/* FINANCE MODAL */}
+      {showFinanceModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full border border-slate-100 shadow-2xl relative animate-[fadeIn_0.3s_ease-out] text-slate-800 space-y-4">
-            <button onClick={() => setShowExpenseModal(false)}
+            <button onClick={() => setShowFinanceModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
               <FiX className="text-lg" />
             </button>
             <h3 className="text-lg font-bold text-[#1b305b] uppercase tracking-wide flex items-center gap-2">
-              <FiTrendingDown className="text-rose-500 text-xl" />
-              <span>Catat Pengeluaran Baru</span>
+              {financeForm.type === 'pemasukan' ? <FiTrendingUp className="text-[#108e50] text-xl" /> : <FiTrendingDown className="text-rose-500 text-xl" />}
+              <span>Catat {financeForm.type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'} Baru</span>
             </h3>
             
-            <form onSubmit={onSubmitExpense} className="space-y-4">
+            <form onSubmit={onSubmitFinance} className="space-y-4">
+              {/* Type Switcher */}
+              <div className="flex bg-slate-100/80 p-1 rounded-xl">
+                <button type="button" onClick={() => setFinanceForm({...financeForm, type: 'pemasukan'})} 
+                  className={`flex-1 py-2 text-[10px] font-bold rounded-lg uppercase transition-all ${financeForm.type === 'pemasukan' ? 'bg-white shadow text-[#108e50]' : 'text-slate-400 hover:text-slate-600'}`}>Pemasukan</button>
+                <button type="button" onClick={() => setFinanceForm({...financeForm, type: 'pengeluaran'})} 
+                  className={`flex-1 py-2 text-[10px] font-bold rounded-lg uppercase transition-all ${financeForm.type === 'pengeluaran' ? 'bg-white shadow text-[#e11d48]' : 'text-slate-400 hover:text-slate-600'}`}>Pengeluaran</button>
+              </div>
+
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Jenis Pengeluaran</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Kategori Umum</label>
                 <div className="flex flex-wrap gap-1.5 mb-2">
-                  {['Listrik', 'Air', 'Sewa Tempat', 'Gas', 'Kebersihan', 'Lainnya'].map(preset => (
+                  {(financeForm.type === 'pengeluaran' ? ['Listrik', 'Air', 'Sewa', 'Lainnya'] : ['Modal', 'Layanan Tambahan', 'Lainnya']).map(preset => (
                     <button key={preset} type="button"
-                      onClick={() => setExpenseForm({ ...expenseForm, description: preset })}
+                      onClick={() => setFinanceForm({ ...financeForm, description: preset })}
                       className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
-                        expenseForm.description === preset
+                        financeForm.description === preset
                           ? 'bg-[#1b305b] text-white border-[#1b305b]'
                           : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-[#1b305b]/20'
                       }`}>
@@ -689,7 +710,7 @@ export default function FinanceView({ controller }) {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Jumlah Pengeluaran (Rp)</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Jumlah Uang (Rp)</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                     <span className="text-xs font-bold text-slate-400">Rp</span>
@@ -697,19 +718,19 @@ export default function FinanceView({ controller }) {
                   <input type="number" required
                     className="block w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#1b305b]/10 focus:border-[#1b305b]"
                     placeholder="Contoh: 150000"
-                    value={expenseForm.amount}
-                    onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+                    value={financeForm.amount}
+                    onChange={(e) => setFinanceForm({ ...financeForm, amount: e.target.value })}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Deskripsi Pengeluaran</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Keterangan</label>
                 <textarea required rows="2"
                   className="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#1b305b]/10 focus:border-[#1b305b] resize-none"
-                  placeholder="Contoh: Pembayaran listrik toko bulan Mei"
-                  value={expenseForm.description}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
+                  placeholder="Contoh detail..."
+                  value={financeForm.description}
+                  onChange={(e) => setFinanceForm({ ...financeForm, description: e.target.value })}
                 />
               </div>
 
@@ -717,19 +738,21 @@ export default function FinanceView({ controller }) {
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Transaksi</label>
                 <input type="date" required
                   className="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#1b305b]/10 focus:border-[#1b305b]"
-                  value={expenseForm.date}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
+                  value={financeForm.date}
+                  onChange={(e) => setFinanceForm({ ...financeForm, date: e.target.value })}
                 />
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowExpenseModal(false)}
+                <button type="button" onClick={() => setShowFinanceModal(false)}
                   className="flex-grow py-2.5 border border-slate-200 text-slate-500 font-semibold rounded-xl hover:bg-slate-50 text-xs uppercase transition-colors">
                   Batal
                 </button>
                 <button type="submit"
-                  className="flex-grow py-2.5 bg-[#108e50] hover:bg-[#0c6c3d] text-white font-semibold rounded-xl text-xs uppercase shadow-sm transition-colors">
-                  Simpan Biaya
+                  className={`flex-grow py-2.5 text-white font-semibold rounded-xl text-xs uppercase shadow-sm transition-colors ${
+                    financeForm.type === 'pemasukan' ? 'bg-[#108e50] hover:bg-[#0c6c3d]' : 'bg-[#e11d48] hover:bg-[#be123c]'
+                  }`}>
+                  Simpan Data
                 </button>
               </div>
             </form>

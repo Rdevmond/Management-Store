@@ -31,6 +31,8 @@ export default function POSView({ controller }) {
   } = controller;
 
   const [activePanel, setActivePanel] = useState('cart'); // 'cart' | 'queue'
+  const [queueTab, setQueueTab] = useState('aktif'); // 'aktif' | 'selesai'
+  const [queueSearch, setQueueSearch] = useState('');
 
   const filtered = useMemo(() => products.filter(p =>
     (posCategory === 'All' || p.category === posCategory) &&
@@ -237,9 +239,9 @@ export default function POSView({ controller }) {
               }`}>
               <FiList className="text-xs text-[#1b305b]" />
               <span>Antrian</span>
-              {orderQueue.length > 0 && (
+              {orderQueue.filter(o => o.status !== 'selesai').length > 0 && (
                 <span className="w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-extrabold flex items-center justify-center leading-none">
-                  {orderQueue.length}
+                  {orderQueue.filter(o => o.status !== 'selesai').length}
                 </span>
               )}
             </button>
@@ -392,16 +394,36 @@ export default function POSView({ controller }) {
         )}
 
         {/* ─── ORDER QUEUE PANEL ─── */}
-        {activePanel === 'queue' && (
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {orderQueue.length === 0 ? (
+        {activePanel === 'queue' && (() => {
+          const filteredQueue = orderQueue.filter(o => {
+            const isMatchTab = queueTab === 'aktif' ? o.status !== 'selesai' : o.status === 'selesai';
+            const isMatchSearch = o.label.toLowerCase().includes(queueSearch.toLowerCase()) || o.id.toString().includes(queueSearch);
+            return isMatchTab && isMatchSearch;
+          });
+
+          return (
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="p-3 border-b border-slate-100 flex flex-col gap-2 shrink-0">
+               <div className="flex bg-slate-100/80 p-1 rounded-lg">
+                 <button onClick={() => setQueueTab('aktif')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md ${queueTab==='aktif'?'bg-white shadow text-[#1b305b]':'text-slate-400 hover:text-slate-600'}`}>Aktif</button>
+                 <button onClick={() => setQueueTab('selesai')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md ${queueTab==='selesai'?'bg-white shadow text-[#1b305b]':'text-slate-400 hover:text-slate-600'}`}>Riwayat Selesai</button>
+               </div>
+               <div className="relative">
+                 <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+                 <input type="text" placeholder="Cari antrian (nama / id)..." 
+                   value={queueSearch} onChange={e=>setQueueSearch(e.target.value)} 
+                   className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:border-[#1b305b]" />
+               </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {filteredQueue.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center py-20 select-none animate-[fadeIn_0.3s_ease-out]">
                 <span className="text-4xl mb-3 filter grayscale opacity-45">📋</span>
-                <p className="text-[11px] font-bold text-[#1b305b]">Antrian Pesanan Kosong</p>
-                <p className="text-[10px] text-slate-400 mt-1">Gunakan tombol "+ Antrian" pada keranjang untuk memarkir pesanan sementara.</p>
+                <p className="text-[11px] font-bold text-[#1b305b]">Antrian {queueTab === 'aktif' ? 'Aktif' : 'Riwayat'} Kosong</p>
+                <p className="text-[10px] text-slate-400 mt-1">{queueTab === 'aktif' ? 'Gunakan tombol "+ Antrian" pada keranjang untuk memarkir pesanan sementara.' : 'Belum ada pesanan yang diselesaikan hari ini.'}</p>
               </div>
             ) : (
-              orderQueue.map(order => {
+              filteredQueue.map(order => {
                 const orderTotal = order.items.reduce((acc, i) => {
                   const topCost = Object.values(i.toppings).filter(Boolean).length * order.toppingPrice * i.quantity;
                   return acc + i.product.price * i.quantity + topCost;
@@ -447,7 +469,11 @@ export default function POSView({ controller }) {
                       </div>
                       
                       <div className="flex justify-end gap-1.5">
-                        {order.status === 'paid' ? (
+                        {order.status === 'selesai' ? (
+                          <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded border border-slate-200">
+                            Telah Selesai ({order.completedAt})
+                          </span>
+                        ) : order.status === 'paid' ? (
                           <>
                             <button onClick={() => controller.editPaidOrder(order.id)}
                               className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-[9px] font-bold rounded transition-all shadow-sm">
@@ -470,8 +496,9 @@ export default function POSView({ controller }) {
                 );
               })
             )}
+            </div>
           </div>
-        )}
+        )})}
       </div>
 
       {/* ── Receipt Modal ── */}
