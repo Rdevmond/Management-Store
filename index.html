@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO Meta Tags -->
+    <title>Es Susu Salju Korea Bingsoo & Kietna Somboi</title>
+    <meta name="description" content="Sistem Manajemen Toko Es Susu Salju Korea Bingsoo & Kietna Somboi Pekanbaru - Kelola transaksi kasir, pantau stok gudang, dan laporan keuangan." />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                blue: '#1b305b',      // Biru Tua Premium dari Logo
+                bluehover: '#132242',
+                green: '#108e50',     // Hijau dari Logo
+                greenhover: '#0c6c3d',
+                ice: '#e0f2fe',       // Biru Es/Salju dari Logo
+                icehover: '#bae6fd',
+                brown: '#452718',     // Cokelat Tua Kietna/Somboi
+                brownhover: '#311b10',
+                cream: '#FAF6F0',     // Putih/Krim hangat
+                accent: '#D4A373',    // Aksen karamel hangat
+                accentlight: '#F4EAD4',
+                white: '#FFFFFF',
+              }
+            },
+            fontFamily: {
+              sans: ['Outfit', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+            },
+            keyframes: {
+              fadeIn: {
+                '0%':   { opacity: '0', transform: 'translateY(8px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              shimmer: {
+                '0%':   { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(300%)' },
+              },
+              pulse: {
+                '0%, 100%': { opacity: '1' },
+                '50%':      { opacity: '0.5' },
+              }
+            },
+            animation: {
+              fadeIn:  'fadeIn 0.4s ease-out both',
+              shimmer: 'shimmer 1.5s infinite linear',
+            }
+          }
+        }
+      }
+    </script>
+    
+    <style>
+      /* Ensure scrollbar looks clean */
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #FAF6F0;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #D4A373;
+        border-radius: 6px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #452718;
+      }
+      /* Global override for senior-friendly readability */
+      body {
+        font-size: 16px;
+      }
+      @media (min-width: 768px) {
+        body {
+          font-size: 18px; /* Slightly larger text on desktop */
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-brand-cream text-slate-850 font-sans antialiased min-h-screen">
+    <div id="root" class="min-h-screen flex flex-col"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

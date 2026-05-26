@@ -1,0 +1,30 @@
+/* Clean base styles for Tailwind CSS */
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: #FAF6F0; /* brand warm cream */
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Custom print media styles for receipt printing */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-receipt-modal, #print-receipt-modal * {
+    visibility: visible;
+  }
+  #print-receipt-modal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
