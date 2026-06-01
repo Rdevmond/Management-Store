@@ -1,7 +1,3 @@
-/**
- * appStore.js — Hanya menyimpan sesi pengguna yang sedang login.
- * Semua data (produk, inventaris, keuangan) kini diambil dari MySQL via API.
- */
 export const appStore = {
   getActiveUser: () => {
     const saved = sessionStorage.getItem('activeUser');

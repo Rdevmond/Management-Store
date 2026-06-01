@@ -1,9 +1,14 @@
-/* Clean base styles for Tailwind CSS */
+:root {
+  --color-dark-blue: #1b305b;
+  --color-brand-green: #108e50;
+  --color-brand-red: #e11d48;
+}
+
 body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: #FAF6F0; /* brand warm cream */
+  background-color: #FAF6F0;
 }
 
 #root {
@@ -13,7 +18,26 @@ body {
   width: 100%;
 }
 
-/* Custom print media styles for receipt printing */
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* Tailwind slate-300 */
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* Tailwind slate-400 */
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
 @media print {
   body * {
     visibility: hidden;

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { appStore } from '../models/appStore';
 import {
-  apiLogin,
+  apiLogin, apiPost,
   apiGetUsers, apiAddUser, apiUpdateUser, apiDeleteUser,
   apiGetProducts, apiAddProduct, apiUpdateProduct, apiDeleteProduct,
   apiGetInventory, apiAddInventory, apiUpdateInventory, apiDeleteInventory,
@@ -10,8 +10,11 @@ import {
   apiCheckout, apiRefund,
 } from '../services/api';
 
+const getLocalISODate = (d = new Date()) => {
+  const tzOffset = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - tzOffset).toISOString().split('T')[0];
+};
 export default function useAppController(navigate) {
-  // ─── Core State ──────────────────────────────────────────────────
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
   const [inventory, setInventory] = useState([]);
@@ -19,39 +22,28 @@ export default function useAppController(navigate) {
   const [ingredientRules, setIngredientRules] = useState({});
   const [activeUser, setActiveUser] = useState(() => appStore.getActiveUser());
   const [appReady, setAppReady] = useState(false);
-
-  // ─── UI States ───────────────────────────────────────────────────
   const [authError, setAuthError] = useState('');
   const [globalAlert, setGlobalAlert] = useState(null);
-
   const triggerAlert = useCallback((message, type = 'info') => {
     setGlobalAlert({ message, type });
     setTimeout(() => setGlobalAlert(null), 3000);
   }, []);
-
-  // POS States
   const [cart, setCart] = useState([]);
   const [posCategory, setPosCategory] = useState('All');
   const [posSearch, setPosSearch] = useState('');
   const [toppingPrice, setToppingPrice] = useState(0);
   const [cashPaid, setCashPaid] = useState('');
   const [checkoutReceipt, setCheckoutReceipt] = useState(null);
-
-  // Order Queue State
   const [orderQueue, setOrderQueue] = useState([]);
   const [nextOrderId, setNextOrderId] = useState(1);
   const [editingOrderId, setEditingOrderId] = useState(null);
   const [editingOldFinanceId, setEditingOldFinanceId] = useState(null);
-
-  // Finance Date Filter
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 30);
-    return d.toISOString().split('T')[0];
+    return getLocalISODate(d);
   });
-  const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
-
-  // ─── Load All Data on Mount ──────────────────────────────────────
+  const [endDate, setEndDate] = useState(() => getLocalISODate());
   useEffect(() => {
     async function loadAll() {
       try {
@@ -73,40 +65,27 @@ export default function useAppController(navigate) {
       }
     }
     loadAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Reload finance whenever date filter changes
+  }, [triggerAlert]);
   useEffect(() => {
     apiGetFinance(startDate, endDate)
       .then(setFinance)
       .catch(console.error);
   }, [startDate, endDate]);
-
-  // Persist active user in sessionStorage
   useEffect(() => {
     appStore.setActiveUser(activeUser);
   }, [activeUser]);
-
-  // ─── Helper ─────────────────────────────────────────────────────
-
-  // Re-fetch inventory from DB (after any mutation)
   const refreshInventory = useCallback(async () => {
     const inv = await apiGetInventory();
     setInventory(inv);
   }, []);
-
   const refreshFinance = useCallback(async () => {
     const fin = await apiGetFinance(startDate, endDate);
     setFinance(fin);
   }, [startDate, endDate]);
-
   const refreshIngredientRules = useCallback(async () => {
     const rules = await apiGetIngredientRules();
     setIngredientRules(rules);
   }, []);
-
-  // ─── INGREDIENT RULES (from DB, kept in state) ──────────────────
   const checkCartFeasibility = useCallback((cartItems, currentInventory) => {
     const tempStock = {};
     currentInventory.forEach(inv => { tempStock[inv.id] = inv.stock; });
@@ -126,17 +105,13 @@ export default function useAppController(navigate) {
     });
     return issues;
   }, [ingredientRules]);
-
-  // ─── CART MEMOS ─────────────────────────────────────────────────
   const stockStatus = useMemo(() => {
     const low = inventory.filter(i => i.stock < i.minStock);
     const out = inventory.filter(i => i.stock === 0);
     return { low, out };
   }, [inventory]);
-
   const cartSubtotal = useMemo(() =>
     cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0), [cart]);
-
   const cartToppingTotal = useMemo(() => {
     if (toppingPrice === 0) return 0;
     return cart.reduce((acc, item) => {
@@ -144,15 +119,11 @@ export default function useAppController(navigate) {
       return acc + tops * toppingPrice * item.quantity;
     }, 0);
   }, [cart, toppingPrice]);
-
   const cartTotal = useMemo(() => cartSubtotal + cartToppingTotal, [cartSubtotal, cartToppingTotal]);
-
   const cartChange = useMemo(() => {
     const paid = parseFloat(cashPaid) || 0;
     return paid >= cartTotal ? paid - cartTotal : 0;
   }, [cashPaid, cartTotal]);
-
-  // ─── AUTH ────────────────────────────────────────────────────────
   const handleLogin = async (username, password) => {
     setAuthError('');
     try {
@@ -166,20 +137,82 @@ export default function useAppController(navigate) {
       return false;
     }
   };
-
   const handleLogout = () => {
     setActiveUser(null);
     setCart([]);
     triggerAlert('Anda telah keluar dari sistem.', 'info');
     navigate('/login');
   };
-
-  const handleForgotPassword = () => {
-    triggerAlert('Silakan hubungi admin untuk reset password.', 'info');
-    return true;
+  // Request a verification code for password reset
+  const requestPasswordReset = async (username, email) => {
+    if (!username || !email) {
+      triggerAlert('Username dan email wajib diisi.', 'error');
+      return false;
+    }
+    try {
+      const res = await apiPost('/forgot-password', { username, email });
+      if (res.success || res.message) {
+        if (res.testUrl) {
+          triggerAlert('Kode verifikasi dikirim! Klik tombol Virtual Inbox yang muncul.', 'success');
+          return { success: true, testUrl: res.testUrl };
+        }
+        triggerAlert('Kode verifikasi telah dikirim ke email Anda.', 'success');
+        return { success: true };
+      }
+      triggerAlert('Gagal mengirim kode verifikasi.', 'error');
+      return false;
+    } catch (err) {
+      triggerAlert(err.message || 'Error mengirim kode.', 'error');
+      return false;
+    }
   };
 
-  // ─── USER MANAGEMENT ─────────────────────────────────────────────
+  // Verify the 4-digit code
+  const verifyPasswordResetCode = async (username, email, code) => {
+    if (!username || !email || !code) {
+      triggerAlert('Kode verifikasi wajib diisi.', 'error');
+      return false;
+    }
+    try {
+      const res = await apiPost('/verify-code', { username, email, code });
+      if (res.success) {
+        triggerAlert('Kode verifikasi berhasil diverifikasi.', 'success');
+        return true;
+      }
+      triggerAlert(res.error || 'Kode verifikasi salah.', 'error');
+      return false;
+    } catch (err) {
+      triggerAlert(err.message || 'Error verifikasi kode.', 'error');
+      return false;
+    }
+  };
+
+  // Confirm the verification code and set new password
+  const confirmPasswordReset = async (username, email, code, newPassword) => {
+    if (!username || !email || !code || !newPassword) {
+      triggerAlert('Semua bidang wajib diisi.', 'error');
+      return false;
+    }
+    try {
+      const res = await apiPost('/confirm-forgot', { username, email, code, newPassword });
+      if (res.success) {
+        triggerAlert('Password berhasil direset. Silakan login.', 'success');
+        return true;
+      }
+      triggerAlert(res.error || 'Verifikasi gagal.', 'error');
+      return false;
+    } catch (err) {
+      triggerAlert(err.message || 'Error verifikasi.', 'error');
+      return false;
+    }
+  };
+
+  // Backward compatible alias (optional) – not used in UI now
+  const handleForgotPassword = async () => {
+    // This alias retains old behavior for any legacy calls
+    // It simply requests a code and then immediately confirms with an empty code (will fail)
+    return false;
+  };
   const addUser = async (newUser) => {
     if (!newUser.username || !newUser.email || !newUser.password || !newUser.role) {
       triggerAlert('Harap isi semua bidang pengguna.', 'error');
@@ -195,7 +228,6 @@ export default function useAppController(navigate) {
       return false;
     }
   };
-
   const updateUser = async (updatedUser) => {
     try {
       await apiUpdateUser(updatedUser.id, updatedUser);
@@ -207,7 +239,6 @@ export default function useAppController(navigate) {
       return false;
     }
   };
-
   const deleteUser = async (userId) => {
     if (!window.confirm('Anda yakin ingin menghapus pengguna ini?')) return false;
     try {
@@ -220,8 +251,6 @@ export default function useAppController(navigate) {
       return false;
     }
   };
-
-  // ─── PRODUCT MANAGEMENT ──────────────────────────────────────────
   const handleSaveProduct = async (form) => {
     if (!form.name || !form.price) {
       triggerAlert('Harap lengkapi formulir produk.', 'error');
@@ -244,7 +273,6 @@ export default function useAppController(navigate) {
       return false;
     }
   };
-
   const handleDeleteProduct = async (id) => {
     if (!window.confirm('Apakah Anda yakin ingin menghapus produk ini dari menu?')) return false;
     try {
@@ -257,8 +285,6 @@ export default function useAppController(navigate) {
       return false;
     }
   };
-
-  // ─── RECIPE MANAGEMENT ───────────────────────────────────────────
   const handleSaveRecipe = async (productId, rules) => {
     try {
       await apiUpdateRecipe(productId, rules);
@@ -270,8 +296,6 @@ export default function useAppController(navigate) {
       return false;
     }
   };
-
-  // ─── INVENTORY MANAGEMENT ────────────────────────────────────────
   const handleSaveInventory = async (form) => {
     if (!form.name || !form.stock || !form.minStock) {
       triggerAlert('Harap lengkapi formulir barang.', 'error');
@@ -285,6 +309,7 @@ export default function useAppController(navigate) {
       price: parseFloat(form.price) || 0,
       purchaseLink: form.purchaseLink || '',
       personalReview: form.personalReview || '',
+      image: form.image || null,
     };
     try {
       if (form.id) {
@@ -302,7 +327,6 @@ export default function useAppController(navigate) {
       return false;
     }
   };
-
   const handleDeleteInventory = async (id) => {
     if (!window.confirm('Apakah Anda yakin ingin menghapus barang inventaris ini?')) return false;
     try {
@@ -315,7 +339,6 @@ export default function useAppController(navigate) {
       return false;
     }
   };
-
   const handleSaveRestock = async (itemId, qty, isExpense, customUnitPrice) => {
     const amount = parseFloat(qty);
     if (isNaN(amount) || amount <= 0) {
@@ -336,7 +359,7 @@ export default function useAppController(navigate) {
           type: 'pengeluaran',
           amount: totalExpense,
           description: `Restock Gudang: ${amount} ${item.unit} ${item.name} @ Rp${costPerUnit.toLocaleString('id-ID')}`,
-          date: new Date().toISOString().split('T')[0],
+          date: getLocalISODate(),
         };
         await apiAddFinance(log);
         await refreshFinance();
@@ -350,8 +373,6 @@ export default function useAppController(navigate) {
       return false;
     }
   };
-
-  // ─── POS / CART ──────────────────────────────────────────────────
   const addToCart = (product) => {
     const existing = cart.find(item => item.product.id === product.id);
     let newCart;
@@ -369,7 +390,6 @@ export default function useAppController(navigate) {
     }
     setCart(newCart);
   };
-
   const updateCartQuantity = (productId, qty) => {
     if (qty <= 0) { setCart(cart.filter(item => item.product.id !== productId)); return; }
     const item = cart.find(i => i.product.id === productId);
@@ -384,14 +404,11 @@ export default function useAppController(navigate) {
     }
     setCart(cart.map(item => item.product.id === productId ? { ...item, quantity: qty } : item));
   };
-
   const toggleCartTopping = (productId, toppingKey) => {
     setCart(cart.map(item => item.product.id === productId
       ? { ...item, toppings: { ...item.toppings, [toppingKey]: !item.toppings[toppingKey] } }
       : item));
   };
-
-  // Build inventory deduction list from cart
   const buildInventoryUpdates = useCallback((cartItems, currentInventory) => {
     const tempStock = {};
     currentInventory.forEach(inv => { tempStock[inv.id] = inv.stock; });
@@ -412,8 +429,6 @@ export default function useAppController(navigate) {
       });
     return { updates, lowStockNames };
   }, [ingredientRules]);
-
-  // ─── CHECKOUT ────────────────────────────────────────────────────
   const handleCheckout = async () => {
     if (cart.length === 0) { triggerAlert('Keranjang belanja masih kosong.', 'error'); return false; }
     const paidAmount = parseFloat(cashPaid);
@@ -422,41 +437,33 @@ export default function useAppController(navigate) {
     }
     const issues = checkCartFeasibility(cart, inventory);
     if (issues.length > 0) { triggerAlert('Stok bahan tidak mencukupi!', 'error'); return false; }
-
     const { updates, lowStockNames } = buildInventoryUpdates(cart, inventory);
-    
     let finalFinanceLog;
     if (editingOrderId) {
       finalFinanceLog = {
-        id: editingOldFinanceId, // update the existing finance log directly
+        id: editingOldFinanceId,
         type: 'pemasukan',
         amount: cartTotal,
         description: `Penjualan Kasir (Diedit): ${cart.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}`,
-        date: new Date().toISOString().split('T')[0],
+        date: getLocalISODate(),
       };
     } else {
       finalFinanceLog = {
         type: 'pemasukan',
         amount: cartTotal,
         description: `Penjualan Kasir: ${cart.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}`,
-        date: new Date().toISOString().split('T')[0],
+        date: getLocalISODate(),
       };
     }
-
     try {
       const response = await apiCheckout({ inventoryUpdates: updates, financeLog: finalFinanceLog });
       const returnedFinanceId = response.financeId;
-
-      // Update local inventory state
       setInventory(prev => prev.map(inv => {
         const u = updates.find(x => x.id === inv.id);
         return u ? { ...inv, stock: u.stock } : inv;
       }));
       await refreshFinance();
-
       const targetId = editingOrderId ? `TRX-UB-${editingOrderId}` : `TRX-${Date.now().toString().slice(-6)}`;
-
-      // Create receipt & add to queue as paid
       const receiptData = {
         id: targetId,
         cashier: activeUser?.username || 'Kasir',
@@ -470,7 +477,6 @@ export default function useAppController(navigate) {
         change: paidAmount - cartTotal,
       };
       setCheckoutReceipt(receiptData);
-
       const newOrder = {
         id: editingOrderId || nextOrderId,
         financeId: returnedFinanceId || editingOldFinanceId,
@@ -482,19 +488,12 @@ export default function useAppController(navigate) {
         timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         status: 'paid',
       };
-      
-      if (editingOrderId) {
-        setOrderQueue(prev => [...prev, newOrder]);
-      } else {
-        setOrderQueue(prev => [...prev, newOrder]);
-        setNextOrderId(prev => prev + 1);
-      }
-
+      setOrderQueue(prev => [...prev, newOrder]);
+      if (!editingOrderId) setNextOrderId(prev => prev + 1);
       setEditingOrderId(null);
       setEditingOldFinanceId(null);
       setCart([]);
       setCashPaid('');
-
       if (lowStockNames.length > 0) {
         triggerAlert(`Transaksi Sukses! Peringatan: Stok (${[...new Set(lowStockNames)].join(', ')}) menipis!`, 'warning');
       } else {
@@ -506,8 +505,63 @@ export default function useAppController(navigate) {
       return false;
     }
   };
-
-  // ─── ORDER QUEUE ─────────────────────────────────────────────────
+  const handleQueueCheckout = async (order, cashPaidAmount) => {
+    const paidAmount = parseFloat(cashPaidAmount);
+    if (isNaN(paidAmount) || paidAmount < order.total) {
+      triggerAlert('Uang bayar kurang atau tidak valid.', 'error');
+      return false;
+    }
+    const issues = checkCartFeasibility(order.items, inventory);
+    if (issues.length > 0) {
+      triggerAlert('Stok bahan tidak mencukupi!', 'error');
+      return false;
+    }
+    const { updates, lowStockNames } = buildInventoryUpdates(order.items, inventory);
+    const finalFinanceLog = {
+      type: 'pemasukan',
+      amount: order.total,
+      description: `Penjualan Kasir: ${order.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}`,
+      date: getLocalISODate(),
+    };
+    try {
+      const response = await apiCheckout({ inventoryUpdates: updates, financeLog: finalFinanceLog });
+      const returnedFinanceId = response.financeId;
+      setInventory(prev => prev.map(inv => {
+        const u = updates.find(x => x.id === inv.id);
+        return u ? { ...inv, stock: u.stock } : inv;
+      }));
+      await refreshFinance();
+      const targetId = `TRX-Q-${order.id}-${Date.now().toString().slice(-4)}`;
+      const receiptData = {
+        id: targetId,
+        cashier: activeUser?.username || 'Kasir',
+        date: new Date().toLocaleString('id-ID'),
+        items: [...order.items],
+        toppingPrice: order.toppingPrice || 0,
+        subtotal: order.subtotal,
+        toppingTotal: order.total - order.subtotal,
+        total: order.total,
+        cashPaid: paidAmount,
+        change: paidAmount - order.total,
+      };
+      setCheckoutReceipt(receiptData);
+      setOrderQueue(prev => prev.map(o => o.id === order.id ? {
+        ...o,
+        financeId: returnedFinanceId,
+        label: `Pesanan #${o.id} (Lunas)`,
+        status: 'paid',
+      } : o));
+      if (lowStockNames.length > 0) {
+        triggerAlert(`Transaksi Sukses! Peringatan: Stok (${[...new Set(lowStockNames)].join(', ')}) menipis!`, 'warning');
+      } else {
+        triggerAlert(`Transaksi pesanan #${order.id} berhasil diproses!`, 'success');
+      }
+      return true;
+    } catch (err) {
+      triggerAlert(`Gagal checkout antrian: ${err.message}`, 'error');
+      return false;
+    }
+  };
   const addToOrderQueue = () => {
     if (cart.length === 0) { triggerAlert('Keranjang kosong.', 'error'); return false; }
     const issues = checkCartFeasibility(cart, inventory);
@@ -528,39 +582,31 @@ export default function useAppController(navigate) {
     triggerAlert(`Pesanan #${nextOrderId} berhasil masuk antrian!`, 'success');
     return true;
   };
-
   const removeFromOrderQueue = (orderId) => {
     setOrderQueue(prev => prev.filter(o => o.id !== orderId));
   };
-
-  // Process queued (unpaid) order → pull to cart for payment
   const processOrder = async (orderId) => {
     if (cart.length > 0) { triggerAlert('Kosongkan keranjang terlebih dahulu!', 'warning'); return false; }
     const order = orderQueue.find(o => o.id === orderId);
     if (!order) return false;
-    
     setCart(order.items);
     setToppingPrice(order.toppingPrice);
     setEditingOrderId(order.id);
-    setEditingOldFinanceId(null); // Unpaid means no previous finance record
+    setEditingOldFinanceId(null);
     setCashPaid('');
     setOrderQueue(prev => prev.filter(o => o.id !== orderId));
     triggerAlert('Pesanan ditarik ke keranjang. Silakan proses pembayaran.', 'info');
     return true;
   };
-
   const completePaidOrder = (orderId) => {
     setOrderQueue(prev => prev.map(o => o.id === orderId ? { ...o, status: 'selesai', completedAt: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) } : o));
     triggerAlert('Pesanan selesai disajikan!', 'success');
   };
-
   const editPaidOrder = async (orderId) => {
     if (cart.length > 0) { triggerAlert('Kosongkan keranjang terlebih dahulu!', 'warning'); return false; }
     const order = orderQueue.find(o => o.id === orderId);
     if (!order) return;
     if (!window.confirm('Ubah pesanan? Stok akan dikembalikan ke gudang. Silakan bayar selisih harganya nanti.')) return;
-
-    // Build restoration list
     const restorations = [];
     order.items.forEach(item => {
       const rules = ingredientRules[item.product.id] || [];
@@ -571,11 +617,9 @@ export default function useAppController(navigate) {
         else restorations.push({ id: rule.id, amount: addAmt });
       });
     });
-
     try {
       await apiRefund({ inventoryRestorations: restorations, financeLog: null });
       await refreshInventory();
-      
       setCart(order.items);
       setToppingPrice(order.toppingPrice);
       setEditingOrderId(order.id);
@@ -587,10 +631,7 @@ export default function useAppController(navigate) {
       triggerAlert(`Gagal mengubah pesanan: ${err.message}`, 'error');
     }
   };
-
-  // ─── FINANCE ─────────────────────────────────────────────────────
   const filteredFinance = useMemo(() => [...finance].sort((a, b) => b.id - a.id), [finance]);
-
   const financeSummary = useMemo(() => {
     let income = 0; let expense = 0;
     finance.forEach(log => {
@@ -599,14 +640,8 @@ export default function useAppController(navigate) {
     });
     return { income, expense, profit: income - expense };
   }, [finance]);
-
-  const allTimeSummary = useMemo(() => {
-    // For all-time summary, we already have financeSummary computed.
-    return financeSummary;
-  }, [financeSummary]);
-
   const todayMetrics = useMemo(() => {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalISODate();
     let totalSales = 0; let countTrx = 0;
     finance.forEach(log => {
       if (log.date === todayStr && log.type === 'pemasukan') {
@@ -616,22 +651,20 @@ export default function useAppController(navigate) {
     const lowStockCount = inventory.filter(item => item.stock < item.minStock).length;
     return { totalSales, countTrx, lowStockCount };
   }, [finance, inventory]);
-
-  const handleSaveExpense = async (amount, description, date) => {
+  const handleSaveFinance = async (type, amount, description, date) => {
     const amountVal = parseFloat(amount);
     if (isNaN(amountVal) || amountVal <= 0 || !description) {
-      triggerAlert('Data pengeluaran tidak valid.', 'error'); return false;
+      triggerAlert('Data keuangan tidak valid.', 'error'); return false;
     }
     try {
-      await apiAddFinance({ type: 'pengeluaran', amount: amountVal, description, date });
+      await apiAddFinance({ type, amount: amountVal, description, date });
       await refreshFinance();
-      triggerAlert('Pengeluaran berhasil dicatat.', 'success');
+      triggerAlert(`${type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'} berhasil dicatat.`, 'success');
       return true;
     } catch (err) {
       triggerAlert(err.message, 'error'); return false;
     }
   };
-
   const handleExportCSV = () => {
     let csvContent = 'data:text/csv;charset=utf-8,ID,Tanggal,Jenis Transaksi,Keterangan,Jumlah Uang\n';
     filteredFinance.forEach(log => {
@@ -646,7 +679,6 @@ export default function useAppController(navigate) {
     document.body.removeChild(link);
     triggerAlert('Laporan CSV berhasil diunduh.', 'success');
   };
-
   const chartData = useMemo(() => {
     const days = [];
     for (let i = 6; i >= 0; i--) {
@@ -665,7 +697,6 @@ export default function useAppController(navigate) {
       return { dayStr, label: `${parts[2]}/${parts[1]}`, income, expense };
     });
   }, [finance]);
-
   const maxChartVal = useMemo(() => {
     let max = 50000;
     chartData.forEach(d => {
@@ -674,15 +705,10 @@ export default function useAppController(navigate) {
     });
     return max * 1.15;
   }, [chartData]);
-
-  // ─── Return ──────────────────────────────────────────────────────
   return {
-    // State
     users, products, inventory, finance, activeUser, appReady,
     authError, setAuthError, globalAlert, triggerAlert,
     ingredientRules,
-
-    // POS
     cart, setCart,
     posCategory, setPosCategory,
     posSearch, setPosSearch,
@@ -691,30 +717,19 @@ export default function useAppController(navigate) {
     checkoutReceipt, setCheckoutReceipt,
     cartSubtotal, cartToppingTotal, cartTotal, cartChange,
     stockStatus, checkCartFeasibility,
-
-    // Queue
     orderQueue, nextOrderId,
     addToCart, updateCartQuantity, toggleCartTopping,
     handleCheckout,
+    handleQueueCheckout,
     addToOrderQueue, removeFromOrderQueue,
     processOrder, completePaidOrder, editPaidOrder,
-
-    // Auth
-    handleLogin, handleLogout, handleForgotPassword,
-
-    // Users
+    handleLogin, handleLogout, handleForgotPassword, requestPasswordReset, verifyPasswordResetCode, confirmPasswordReset,
     addUser, updateUser, deleteUser,
-
-    // Products & Recipes
     handleSaveProduct, handleDeleteProduct, handleSaveRecipe,
-
-    // Inventory
     handleSaveInventory, handleDeleteInventory, handleSaveRestock,
-
-    // Finance
-    filteredFinance, financeSummary, allTimeSummary, todayMetrics,
+    filteredFinance, financeSummary, allTimeSummary: financeSummary, todayMetrics,
     startDate, setStartDate, endDate, setEndDate,
-    handleSaveExpense, handleExportCSV,
+    handleSaveFinance, handleExportCSV,
     chartData, maxChartVal,
   };
 }

@@ -3,7 +3,7 @@ export default function ReactLogo({ className = 'w-16 h-16', color = '#61DAFB' }
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="-11.5 -10.23174 23 20.46348"
-      className={`${className} animate-[spin_10s_linear_infinite]`}
+      className={`${className} animate-spin-slow`}
     >
       <title>React Logo</title>
       <circle cx="0" cy="0" r="2.05" fill={color} />

@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS inventory (
     min_stock DECIMAL(10,2) NOT NULL DEFAULT 0,
     price DECIMAL(10,2) NOT NULL DEFAULT 0,
     purchase_link TEXT,
-    personal_review TEXT
+    personal_review TEXT,
+    image LONGTEXT
 );
 
 -- Finance table

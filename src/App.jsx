@@ -5,69 +5,51 @@ import LoadingSpinner from './views/components/LoadingSpinner';
 import GlobalAlert from './views/components/GlobalAlert';
 import AuthLayout from './views/layouts/AuthLayout';
 import MainLayout from './views/layouts/MainLayout';
-
-// Lazy loading views for optimized performance
 const LoginView = lazy(() => import('./views/pages/LoginView'));
 const DashboardView = lazy(() => import('./views/pages/DashboardView'));
 const POSView = lazy(() => import('./views/pages/POSView'));
 const ProductView = lazy(() => import('./views/pages/ProductView'));
 const RecipeView = lazy(() => import('./views/pages/RecipeView'));
 const UserManagementView = lazy(() => import('./views/pages/UserManagementView'));
-const InventoryView = lazy(() => import('./views/pages/InventoryView'));
+const ResetVerify = lazy(() => import('./views/pages/ResetVerify'));
+const ResetPassword = lazy(() => import('./views/pages/ResetPassword'));
 const FinanceView = lazy(() => import('./views/pages/FinanceView'));
-
-// Guard component for restricted views (requires authentication & specific roles)
+const InventoryView = lazy(() => import('./views/pages/InventoryView'));
 function ProtectedRoute({ controller, allowedRoles, children }) {
   if (!controller.activeUser) {
     return <Navigate to="/login" replace />;
   }
-
   if (allowedRoles && !allowedRoles.includes(controller.activeUser.role)) {
-    // Redirect staff who don't have access permissions (e.g. cashier to POS cashier panel)
     return <Navigate to={controller.activeUser.role === 'kasir' ? '/pos' : '/'} replace />;
   }
-
   return children;
 }
-
-// Guard component to redirect already logged in users away from login pages
 function PublicRoute({ controller, children }) {
   if (controller.activeUser) {
     return <Navigate to={controller.activeUser.role === 'admin' ? '/' : '/pos'} replace />;
   }
   return children;
 }
-
 function AppContent() {
   const navigate = useNavigate();
   const controller = useAppController(navigate);
-
   return (
     <>
-      {/* Global Action Toast Notification Banner */}
+      {}
       {controller.globalAlert && (
         <GlobalAlert 
           message={controller.globalAlert.message} 
           type={controller.globalAlert.type} 
         />
       )}
-
-      {/* Code Splitting & Lazy Loaded views using Suspense with a spinning React logo */}
+      {}
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
-          {/* Authentication Routes Layout */}
-          <Route
-            path="/login"
-            element={
-              <PublicRoute controller={controller}>
-                <AuthLayout />
-              </PublicRoute>
-            }
-          >
-            <Route index element={<LoginView controller={controller} />} />
-          </Route>
-
-          {/* Core App Main Interface Layout */}
+          {}
+          <Route path="/login" element={<PublicRoute controller={controller}><AuthLayout><LoginView controller={controller} /></AuthLayout></PublicRoute>} />
+          <Route path="/reset-verify" element={<PublicRoute controller={controller}><ResetVerify controller={controller} /></PublicRoute>} />
+          <Route path="/reset-password" element={<PublicRoute controller={controller}><ResetPassword controller={controller} /></PublicRoute>} />
+          {}
           <Route
             path="/"
             element={
@@ -76,7 +58,7 @@ function AppContent() {
               </ProtectedRoute>
             }
           >
-            {/* Index redirection based on role */}
+            {}
             <Route
               index
               element={
@@ -87,8 +69,7 @@ function AppContent() {
                 )
               }
             />
-
-            {/* General Pages */}
+            {}
             <Route
               path="pos"
               element={
@@ -97,7 +78,6 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
-            
             <Route
               path="produk"
               element={
@@ -106,7 +86,6 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="resep"
               element={
@@ -131,7 +110,6 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="laporan"
               element={
@@ -140,8 +118,7 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
-
-            {/* Invalid path route redirect */}
+            {}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
@@ -149,7 +126,6 @@ function AppContent() {
     </>
   );
 }
-
 export default function App() {
   return (
     <HashRouter>

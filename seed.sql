@@ -10,18 +10,18 @@ INSERT INTO users (username, email, password, role) VALUES
 
 -- Products
 INSERT INTO products (name, category, price, image) VALUES
-  ('Es Salju Buah Sunkist', 'Es Salju Buah', 15000, '🍊'),
-  ('Es Salju Buah Sirsak', 'Es Salju Buah', 15000, 'https://images.unsplash.com/photo-1596701062351-df5f8af5576a?auto=format&fit=crop&q=80&w=300'),
-  ('Es Salju Buah Mangga', 'Es Salju Buah', 15000, 'https://images.unsplash.com/photo-1553119119-ac73c0290bb1?auto=format&fit=crop&q=80&w=300'),
-  ('Es Salju Buah Nenas', 'Es Salju Buah', 15000, '🍍'),
-  ('Es Salju Buah Delima', 'Es Salju Buah', 15000, '🍎'),
-  ('Es Salju Buah Anggur', 'Es Salju Buah', 15000, '🍇'),
-  ('Bingsoo Vanila', 'Es Salju Susu', 15000, 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&q=80&w=300'),
-  ('Bingsoo Coklat', 'Es Salju Susu', 15000, '🍫'),
-  ('Bingsoo Stroberi', 'Es Salju Susu', 15000, '🍓'),
-  ('Es Salju Kietna', 'Kietna', 15000, '🍊'),
-  ('Minuman Kietna Nanas', 'Kietna', 15000, '🍹'),
-  ('Minuman Kietna Somboi', 'Minuman', 10000, '🥤')
+  ('Es Salju Buah Sunkist', 'Es Salju Buah', 15000, '/images/bingso_sunkist.png'),
+  ('Es Salju Buah Sirsak', 'Es Salju Buah', 15000, '/images/bingso_sirsak.png'),
+  ('Es Salju Buah Mangga', 'Es Salju Buah', 15000, '/images/bingso_mangga.png'),
+  ('Es Salju Buah Nenas', 'Es Salju Buah', 15000, '/images/bingso_nenas.png'),
+  ('Es Salju Buah Delima', 'Es Salju Buah', 15000, '/images/bingso_delima.png'),
+  ('Es Salju Buah Anggur', 'Es Salju Buah', 15000, '/images/bingso_anggur.png'),
+  ('Bingsoo Vanila', 'Es Salju Susu', 15000, '/images/bingso_vanila.png'),
+  ('Bingsoo Coklat', 'Es Salju Susu', 15000, '/images/bingso_coklat.png'),
+  ('Bingsoo Stroberi', 'Es Salju Susu', 15000, '/images/bingso_stroberi.png'),
+  ('Es Salju Kietna', 'Kietna', 15000, '/images/bingso_kietna.png'),
+  ('Minuman Kietna Nanas', 'Kietna', 15000, '/images/minuman_kietna_nanas.png'),
+  ('Minuman Kietna Somboi', 'Minuman', 10000, '/images/minuman_somboi.png')
   ON DUPLICATE KEY UPDATE id=id;
 
 -- Inventory
