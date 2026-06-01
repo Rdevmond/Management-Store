@@ -118,7 +118,7 @@ export default function LoginView({ controller }) {
               </div>
             </div>
             <button type="submit"
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white transition-all shadow-sm mt-2 bg-slate-900 hover:bg-slate-800">
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white transition-all shadow-sm mt-6 bg-slate-900 hover:bg-slate-800">
               <FiLogIn className="w-4 h-4" />
               <span>MASUK</span>
             </button>
@@ -159,7 +159,7 @@ export default function LoginView({ controller }) {
                           value={forgotForm.email} onChange={e => setForgotForm({ ...forgotForm, email: e.target.value })} />
                       </div>
                     </div>
-                    <button type="submit" className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white transition-all shadow-sm mt-2 bg-emerald-600 hover:bg-emerald-700">
+                    <button type="submit" className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white transition-all shadow-sm mt-6 bg-emerald-600 hover:bg-emerald-700">
                       <FiKey className="w-4 h-4" />
                       <span>LANJUTKAN</span>
                     </button>
@@ -195,7 +195,7 @@ export default function LoginView({ controller }) {
                         />
                       </div>
                     </div>
-                    <button type="submit" className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white transition-all shadow-sm mt-2 bg-emerald-600 hover:bg-emerald-700">
+                    <button type="submit" className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white transition-all shadow-sm mt-6 bg-emerald-600 hover:bg-emerald-700">
                       <FiShield className="w-4 h-4" />
                       <span>VERIFIKASI KODE</span>
                     </button>
@@ -232,7 +232,7 @@ export default function LoginView({ controller }) {
                           value={forgotForm.confirmPassword} onChange={e => setForgotForm({ ...forgotForm, confirmPassword: e.target.value })} />
                       </div>
                     </div>
-                    <button type="submit" className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white transition-all shadow-sm mt-2 bg-emerald-600 hover:bg-emerald-700">
+                    <button type="submit" className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white transition-all shadow-sm mt-6 bg-emerald-600 hover:bg-emerald-700">
                       <FiKey className="w-4 h-4" />
                       <span>SIMPAN PASSWORD BARU</span>
                     </button>
@@ -242,13 +242,7 @@ export default function LoginView({ controller }) {
             )}
           </div>
         )}
-        <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-center">
-          <p className="text-xs text-slate-400 font-medium leading-relaxed">
-            Demo - Admin: <strong className="text-slate-900">admin</strong> / <strong className="text-slate-900">admin123</strong>
-            <span className="mx-2 text-slate-300">·</span>
-            Kasir: <strong className="text-green-600">kasir</strong> / <strong className="text-green-600">kasir123</strong>
-          </p>
-        </div>
+
     </div>
   );
 }
