@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function AuthLayout({ children }) {
   return (
     <div className="flex-grow flex items-center justify-center min-h-screen py-12 px-4 font-sans relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50">

@@ -1,7 +1,6 @@
 CREATE DATABASE IF NOT EXISTS es_salju_app;
 USE es_salju_app;
 
--- Users table
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -11,7 +10,6 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Products table
 CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
@@ -20,7 +18,6 @@ CREATE TABLE IF NOT EXISTS products (
     image TEXT
 );
 
--- Inventory table
 CREATE TABLE IF NOT EXISTS inventory (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -33,7 +30,6 @@ CREATE TABLE IF NOT EXISTS inventory (
     image LONGTEXT
 );
 
--- Finance table
 CREATE TABLE IF NOT EXISTS finance (
     id INT AUTO_INCREMENT PRIMARY KEY,
     type ENUM('pemasukan', 'pengeluaran') NOT NULL,
@@ -43,7 +39,6 @@ CREATE TABLE IF NOT EXISTS finance (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Ingredient rules table (BOM per product)
 CREATE TABLE IF NOT EXISTS ingredient_rules (
     id INT AUTO_INCREMENT PRIMARY KEY,
     product_id INT NOT NULL,
@@ -53,7 +48,6 @@ CREATE TABLE IF NOT EXISTS ingredient_rules (
     FOREIGN KEY (inventory_id) REFERENCES inventory(id) ON DELETE CASCADE
 );
 
--- Orders table (queue & history)
 CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     label VARCHAR(100) NOT NULL,
@@ -64,7 +58,6 @@ CREATE TABLE IF NOT EXISTS orders (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Order items table
 CREATE TABLE IF NOT EXISTS order_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,

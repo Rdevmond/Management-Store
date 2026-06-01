@@ -77,9 +77,9 @@ INSERT INTO ingredient_rules (product_id, inventory_id, amount) VALUES
 
 -- Orders & Order Items
 INSERT INTO orders (label, topping_price, subtotal, total, status, created_at) VALUES
-  ('Order #1', 2000, 50000, 52000, 'paid', NOW()),
-  ('Order #2', 0, 30000, 30000, 'antrian', NOW()),
-  ('Order #3', 1500, 40000, 41500, 'paid', NOW());
+  ('Order #1', 2000, 45000, 47000, 'paid', NOW()),
+  ('Order #2', 0, 15000, 15000, 'antrian', NOW()),
+  ('Order #3', 1500, 60000, 61500, 'paid', NOW());
 
 INSERT INTO order_items (order_id, product_id, quantity, toppings) VALUES
   (1, 1, 2, NULL),
