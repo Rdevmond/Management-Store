@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { FiX, FiZap } from 'react-icons/fi';
 export default function RestockModal({
   restockItem,
@@ -11,7 +12,7 @@ export default function RestockModal({
   onSubmitRestock
 }) {
   if (!restockItem) return null;
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl p-6 max-w-sm w-full border border-slate-100 shadow-2xl relative animate-fade-in text-slate-800 space-y-4">
         <button
@@ -91,6 +92,7 @@ export default function RestockModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

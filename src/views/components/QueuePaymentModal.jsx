@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { FiX, FiCreditCard, FiDollarSign, FiCornerDownRight } from 'react-icons/fi';
 
 export default function QueuePaymentModal({ order, onClose, fmt, onConfirm }) {
@@ -39,7 +40,7 @@ export default function QueuePaymentModal({ order, onClose, fmt, onConfirm }) {
     setCashPaid((current + amount).toString());
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl p-6 max-w-md w-full border border-slate-100 shadow-2xl relative animate-fade-in text-slate-800 space-y-5">
         <button 
@@ -192,6 +193,7 @@ export default function QueuePaymentModal({ order, onClose, fmt, onConfirm }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

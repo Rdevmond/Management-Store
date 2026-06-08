@@ -1,6 +1,7 @@
 import { FiX, FiTag, FiUpload } from 'react-icons/fi';
 import { FaUtensils, FaFileUpload } from 'react-icons/fa';
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import compressImage from '../../utils/compressImage';
 export default function ProductModal({
   showModal,
@@ -21,7 +22,7 @@ export default function ProductModal({
     }
   }, [showModal, form.id, form.image, setForm]);
   if (!showModal) return null;
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl p-6 max-w-sm w-full border border-slate-100 shadow-xl relative animate-fade-in text-slate-800">
         <button
@@ -166,6 +167,7 @@ export default function ProductModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

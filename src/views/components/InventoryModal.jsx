@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { FiX, FiPackage } from 'react-icons/fi';
 import InventoryMediaInput from './InventoryMediaInput';
 export default function InventoryModal({
@@ -20,7 +21,7 @@ export default function InventoryModal({
   }, [showInvModal, invForm?.id, invForm?.image, setInvForm]);
 
   if (!showInvModal) return null;
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center p-4 overflow-auto">
       <div className="bg-white rounded-2xl p-6 max-w-full sm:max-w-md md:max-w-lg lg:max-w-xl w-full border border-slate-100 shadow-2xl relative animate-fade-in text-slate-800 space-y-4 max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-slate-50 [&::-webkit-scrollbar-thumb]:bg-green-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-brand-green">
         <button
@@ -144,6 +145,7 @@ export default function InventoryModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

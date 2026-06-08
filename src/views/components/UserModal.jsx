@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { FiX, FiUser, FiMail, FiLock, FiShield } from 'react-icons/fi';
 export default function UserModal({
   showModal,
@@ -8,7 +9,7 @@ export default function UserModal({
   handleSubmit
 }) {
   if (!showModal) return null;
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 overflow-auto">
       <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl p-6 w-full max-w-full sm:max-w-md md:max-w-lg animate-fade-in-fast flex flex-col relative text-slate-800">
         <div className="flex items-center justify-between pb-4 border-b border-slate-150 mb-5">
@@ -109,6 +110,7 @@ export default function UserModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

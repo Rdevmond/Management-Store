@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { FiX, FiTrendingUp, FiTrendingDown } from 'react-icons/fi';
 export default function FinanceModal({
   showFinanceModal,
@@ -7,7 +8,7 @@ export default function FinanceModal({
   onSubmitFinance
 }) {
   if (!showFinanceModal) return null;
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl p-6 max-w-md w-full border border-slate-100 shadow-2xl relative animate-fade-in text-slate-800 space-y-4">
         <button onClick={() => setShowFinanceModal(false)}
@@ -86,6 +87,7 @@ export default function FinanceModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
