@@ -12,7 +12,7 @@ export default function FinanceLogsTable({
   onOpenAddFinance
 }) {
   const renderTable = (logs, emptyMsg) => (
-    <div className="overflow-x-auto border-b border-slate-100">
+    <div className="overflow-x-auto overflow-y-auto max-h-[400px] border-b border-slate-100">
       <table className="min-w-full divide-y divide-slate-100 text-left text-xs relative">
         <thead className="bg-slate-50 text-slate-900 font-bold uppercase tracking-wider sticky top-0 z-10 shadow-sm">
           <tr>
@@ -54,10 +54,6 @@ export default function FinanceLogsTable({
               onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
-          <button onClick={handleExportCSV}
-            className="w-full sm:w-auto px-4 py-2.5 bg-dark-blue hover:bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-sm transition-colors">
-            <FiPrinter className="text-sm" /> Export CSV
-          </button>
         </div>
       )}
       {activeTab === 'keuangan' && (
@@ -67,19 +63,6 @@ export default function FinanceLogsTable({
             <span className="text-slate-900 font-extrabold">{pemasukanLogs.length + pengeluaranLogs.length} Entri</span>
           </div>
           {renderTable([...pemasukanLogs, ...pengeluaranLogs].sort((a,b) => b.id - a.id), 'Belum ada catatan mutasi kas di periode ini.')}
-          <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-            <p className="text-xs text-slate-400 font-medium">Catat transaksi kas masuk/keluar di luar transaksi kasir POS secara manual.</p>
-            <div className="flex gap-2">
-              <button onClick={() => onOpenAddFinance('pemasukan')}
-                className="px-3.5 py-2 bg-green-600 hover:bg-brand-green text-white text-xs font-extrabold rounded-xl flex items-center gap-1 shadow-sm transition-colors uppercase">
-                <FiPlus className="text-xs" /> Pemasukan
-              </button>
-              <button onClick={() => onOpenAddFinance('pengeluaran')}
-                className="px-3.5 py-2 bg-brand-red hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl flex items-center gap-1 shadow-sm transition-colors uppercase">
-                <FiPlus className="text-xs" /> Pengeluaran
-              </button>
-            </div>
-          </div>
         </div>
       )}
       {activeTab === 'pemesanan' && (
@@ -87,7 +70,7 @@ export default function FinanceLogsTable({
           <div className="px-6 py-3.5 bg-emerald-50/40 border-b border-emerald-100 flex items-center justify-between">
             <p className="text-xs text-green-600 font-bold uppercase tracking-wide">Analisis menu terlaris berdasarkan transaksi penjualan</p>
           </div>
-          <div className="overflow-x-auto border-b border-slate-100">
+          <div className="overflow-x-auto overflow-y-auto max-h-[400px] border-b border-slate-100">
             <table className="min-w-full divide-y divide-slate-100 text-left text-xs font-semibold text-slate-700 relative">
               <thead className="bg-slate-50 text-slate-900 font-bold uppercase tracking-wider sticky top-0 z-10 shadow-sm">
                 <tr>
@@ -130,13 +113,6 @@ export default function FinanceLogsTable({
             </span>
           </div>
           {renderTable(pengeluaranLogs, 'Belum ada catatan pengeluaran di periode ini.')}
-          <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-            <p className="text-xs text-slate-400 font-medium">Catat pengeluaran baru seperti listrik, sewa, bahan dll.</p>
-            <button onClick={() => onOpenAddFinance('pengeluaran')}
-              className="px-3 py-1.5 bg-brand-red hover:bg-rose-700 text-white text-xs font-bold rounded-lg flex items-center gap-1 transition-colors shadow-sm">
-              <FiPlus className="text-xs" /> Tambah Pengeluaran
-            </button>
-          </div>
         </div>
       )}
     </div>
