@@ -62,8 +62,8 @@ export default function POSView({ controller }) {
   }, [inventory, cart, ingredientRules]);
 
   return (
-    <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in-slow text-slate-800">
-      <div className="lg:col-span-2 flex flex-col gap-5 min-h-0">
+    <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in-slow text-slate-800">
+      <div className="lg:col-span-2 xl:col-span-3 flex flex-col gap-5 min-h-[500px] lg:min-h-0">
         {stockStatus.out.length > 0 && (
           <div className="flex items-start gap-2.5 bg-rose-50 border border-rose-100/60 px-4 py-3 rounded-2xl text-xs text-rose-700 font-semibold animate-fade-in shadow-sm">
             <FiAlertCircle className="shrink-0 mt-0.5 text-rose-500 text-sm animate-pulse" />

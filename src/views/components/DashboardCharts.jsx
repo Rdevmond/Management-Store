@@ -12,30 +12,32 @@ export default function DashboardCharts({
   return (
     <div className="relative flex-1 min-h-[220px] flex items-center justify-center">
       {activeChart === 'weeklySales' && (
-        <svg className="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
+        <svg className="w-full" height="220" style={{ minWidth: '300px' }}>
           {[40, 90, 140, 190].map(y => (
-            <line key={y} x1="48" y1={y} x2="585" y2={y} stroke="#f1f5f9" strokeWidth="1" />
+            <line key={y} x1="55" y1={y} x2="98%" y2={y} stroke="#f1f5f9" strokeWidth="1" />
           ))}
-          <line x1="48" y1="190" x2="585" y2="190" stroke="#e2e8f0" strokeWidth="1" />
+          <line x1="55" y1="190" x2="98%" y2="190" stroke="#e2e8f0" strokeWidth="1" />
           {chartData.map((d, i) => {
-            const x = 70 + i * 76;
-            const ih = (d.income / (maxChartVal || 1)) * 148;
-            const eh = (d.expense / (maxChartVal || 1)) * 148;
+            const xPct = 15 + (i * (80 / (chartData.length - 1 || 1)));
+            const rawIh = (d.income / (maxChartVal || 1)) * 148;
+            const rawEh = (d.expense / (maxChartVal || 1)) * 148;
+            const ih = Math.max(0, Math.min(148, rawIh));
+            const eh = Math.max(0, Math.min(148, rawEh));
             return (
               <g key={d.dayStr}>
-                <rect x={x} y={190 - ih} width="18" height={ih || 0} fill="var(--color-dark-blue)" rx="3" opacity="0.88">
+                <rect x={`${xPct}%`} dx="-10" y={190 - ih} width="16" height={ih || 0} fill="var(--color-dark-blue)" rx="3" opacity="0.88" style={{ transform: 'translateX(-10px)' }}>
                   <title>Pemasukan: {fmt(d.income)}</title>
                 </rect>
-                <rect x={x + 22} y={190 - eh} width="18" height={eh || 0} fill="var(--color-brand-green)" rx="3" opacity="0.80">
+                <rect x={`${xPct}%`} dx="8" y={190 - eh} width="16" height={eh || 0} fill="var(--color-brand-green)" rx="3" opacity="0.80" style={{ transform: 'translateX(8px)' }}>
                   <title>Pengeluaran: {fmt(d.expense)}</title>
                 </rect>
-                <text x={x + 19} y="210" textAnchor="middle" fill="#94a3b8" fontSize="8.5" fontWeight="600">{d.label}</text>
+                <text x={`${xPct}%`} dx="7" y="210" textAnchor="middle" fill="#94a3b8" fontSize="10" fontWeight="600">{d.label}</text>
               </g>
             );
           })}
-          <text x="44" y="44" textAnchor="end" fill="#cbd5e1" fontSize="7.5" fontWeight="600">{fmt(maxChartVal)}</text>
-          <text x="44" y="117" textAnchor="end" fill="#cbd5e1" fontSize="7.5" fontWeight="600">{fmt(maxChartVal / 2)}</text>
-          <text x="44" y="194" textAnchor="end" fill="#cbd5e1" fontSize="7.5" fontWeight="600">Rp 0</text>
+          <text x="48" y="44" textAnchor="end" fill="#cbd5e1" fontSize="10" fontWeight="600">{fmt(maxChartVal)}</text>
+          <text x="48" y="117" textAnchor="end" fill="#cbd5e1" fontSize="10" fontWeight="600">{fmt(maxChartVal / 2)}</text>
+          <text x="48" y="194" textAnchor="end" fill="#cbd5e1" fontSize="10" fontWeight="600">Rp 0</text>
         </svg>
       )}
       {activeChart === 'categorySales' && (

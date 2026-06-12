@@ -38,8 +38,8 @@ export default function RecipeView({ controller }) {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 flex-1 min-h-0">
-        <div className="md:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col">
-          <div className="px-5 py-4 border-b border-slate-100 font-semibold text-slate-700 flex flex-col gap-3">
+        <div className="md:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col min-h-0">
+          <div className="px-5 py-4 border-b border-slate-100 font-semibold text-slate-700 flex flex-col gap-3 shrink-0">
             <span>Pilih Menu</span>
             <div className="relative">
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -52,7 +52,7 @@ export default function RecipeView({ controller }) {
               />
             </div>
           </div>
-          <div className="p-3 space-y-2">
+          <div className="p-3 space-y-2 flex-1 overflow-y-auto min-h-0">
             {filteredProducts.map(p => {
               const ruleCount = (ingredientRules[p.id] || []).length;
               return (
@@ -65,9 +65,9 @@ export default function RecipeView({ controller }) {
                     : 'hover:bg-slate-50 border border-transparent text-slate-600'
                   }`}
                 >
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-sm">{p.name}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${ruleCount > 0 ? 'bg-green-600/20 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="font-semibold text-sm truncate">{p.name}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${ruleCount > 0 ? 'bg-green-600/20 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
                       {ruleCount} bahan
                     </span>
                   </div>
@@ -77,22 +77,31 @@ export default function RecipeView({ controller }) {
             })}
           </div>
         </div>
-        <div className="md:col-span-8 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col">
+        <div className={`md:col-span-8 bg-white md:rounded-2xl border-0 md:border border-slate-100 shadow-sm flex flex-col min-h-0 ${selectedProductId ? 'fixed inset-0 z-50 md:relative md:inset-auto md:z-auto' : 'hidden md:flex'}`}>
           {selectedProduct ? (
             <>
-              <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
+              <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap sm:flex-nowrap justify-between items-center bg-slate-50/50 rounded-t-2xl shrink-0 gap-3">
                 <div>
-                  <h3 className="font-bold text-lg text-slate-800">{selectedProduct.name}</h3>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{selectedProduct.category}</p>
+                  <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded uppercase tracking-widest mb-1 inline-block border border-green-200/50">Mengedit Resep</span>
+                  <h3 className="font-bold text-lg text-slate-800 leading-tight">{selectedProduct.name}</h3>
+                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mt-0.5">{selectedProduct.category}</p>
                 </div>
-                <button 
-                  onClick={handleSave}
-                  className="px-5 py-2 bg-green-600 hover:bg-brand-green text-white text-sm font-semibold rounded-xl transition-all shadow-sm flex items-center gap-2"
-                >
-                  <FiSave /> Simpan Resep
-                </button>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button 
+                    onClick={() => setSelectedProductId(null)}
+                    className="md:hidden flex-1 sm:flex-none px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-semibold rounded-xl transition-all"
+                  >
+                    Kembali
+                  </button>
+                  <button 
+                    onClick={handleSave}
+                    className="flex-1 sm:flex-none px-5 py-2 bg-green-600 hover:bg-brand-green text-white text-sm font-semibold rounded-xl transition-all shadow-sm flex justify-center items-center gap-2"
+                  >
+                    <FiSave /> Simpan
+                  </button>
+                </div>
               </div>
-              <div className="p-6 bg-slate-50/30 rounded-b-2xl">
+              <div className="p-6 bg-slate-50/30 rounded-b-2xl flex-1 overflow-y-auto min-h-0">
                 <div className="space-y-4">
                   {currentRecipe.length === 0 ? (
                     <div className="text-center py-12 text-slate-400">

@@ -58,7 +58,7 @@ export default function DashboardView({ controller }) {
           </Link>
         </div>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         <Link to="/laporan" className="block">
           <KPICard
             label="Omzet Hari Ini"
@@ -88,8 +88,8 @@ export default function DashboardView({ controller }) {
           valueCls={allTimeSummary.profit >= 0 ? 'text-slate-800' : 'text-rose-600'}
         />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 flex-1 min-h-0">
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col min-h-0">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 flex-1 min-h-0">
+        <div className="md:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col min-h-[350px]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
               <FiActivity className="text-green-600" /> Grafik Visual Dinamis
@@ -105,7 +105,7 @@ export default function DashboardView({ controller }) {
               ))}
             </div>
           </div>
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-[250px]">
             <DashboardCharts
               activeChart={activeChart}
               chartData={chartData}
@@ -117,9 +117,9 @@ export default function DashboardView({ controller }) {
             />
           </div>
           {activeChart === 'weeklySales' && (
-            <div className="flex justify-center gap-6 mt-4 text-xs font-semibold text-slate-500">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-slate-900 inline-block" /> Pemasukan POS</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-green-600 inline-block" /> Pengeluaran</span>
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-4 text-xs font-semibold text-slate-500">
+              <span className="flex items-center gap-1.5 whitespace-nowrap"><span className="w-2.5 h-2.5 rounded bg-slate-900 inline-block shrink-0" /> Pemasukan POS</span>
+              <span className="flex items-center gap-1.5 whitespace-nowrap"><span className="w-2.5 h-2.5 rounded bg-green-600 inline-block shrink-0" /> Pengeluaran</span>
             </div>
           )}
         </div>
