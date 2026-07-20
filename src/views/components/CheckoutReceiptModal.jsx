@@ -1,9 +1,12 @@
 import { FiX, FiPrinter, FiCornerDownRight } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+
 export default function CheckoutReceiptModal({
   checkoutReceipt,
   setCheckoutReceipt,
   fmt
 }) {
+  const navigate = useNavigate();
   if (!checkoutReceipt) return null;
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center p-4">
@@ -72,7 +75,7 @@ export default function CheckoutReceiptModal({
           Terima kasih atas kunjungan Anda!<br />Pekanbaru, Riau
         </p>
         <div className="flex gap-2 mt-4 pt-3.5 border-t border-slate-100">
-          <button onClick={() => window.print()}
+          <button onClick={() => { setCheckoutReceipt(null); navigate('/struk/' + checkoutReceipt.id); }}
             className="flex-1 py-2.5 bg-slate-900 hover:bg-dark-blue text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm">
             <FiPrinter className="text-xs" /> Print Struk
           </button>

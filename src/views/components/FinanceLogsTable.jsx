@@ -1,15 +1,13 @@
-import { FiSearch, FiPlus, FiPrinter } from 'react-icons/fi';
+import { FiSearch } from 'react-icons/fi';
 export default function FinanceLogsTable({
   activeTab,
   searchQuery,
   setSearchQuery,
-  handleExportCSV,
   formatRupiah,
   formatDateStr,
   pemasukanLogs,
   pengeluaranLogs,
-  productTrends,
-  onOpenAddFinance
+  productTrends
 }) {
   const renderTable = (logs, emptyMsg) => (
     <div className="overflow-x-auto overflow-y-auto max-h-[400px] border-b border-slate-100">
@@ -60,7 +58,7 @@ export default function FinanceLogsTable({
         <div>
           <div className="px-6 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 font-bold uppercase tracking-wider">
             <span>Riwayat Seluruh Mutasi Buku Kas</span>
-            <span className="text-slate-900 font-extrabold">{pemasukanLogs.length + pengeluaranLogs.length} Entri</span>
+            <span className="text-slate-900 font-extrabold">{pemasukanLogs.length + pengeluaranLogs.length} Aktivitas</span>
           </div>
           {renderTable([...pemasukanLogs, ...pengeluaranLogs].sort((a,b) => b.id - a.id), 'Belum ada catatan mutasi kas di periode ini.')}
         </div>

@@ -4,7 +4,7 @@
 
 -- Users
 INSERT INTO users (username, email, password, role) VALUES
-  ('admin', 'admin@essalju.com', 'admin123', 'admin'),
+  ('pemilik', 'admin@essalju.com', 'pemilik123', 'pemilik'),
   ('kasir', 'kasir@essalju.com', 'kasir123', 'kasir')
   ON DUPLICATE KEY UPDATE id=id;
 
@@ -25,61 +25,85 @@ INSERT INTO products (name, category, price, image) VALUES
   ON DUPLICATE KEY UPDATE id=id;
 
 -- Inventory
+-- id: 1  Mangkok Bingsoo
+-- id: 2  Sendok Plastik
+-- id: 3  Susu Kental Manis (SKM)
+-- id: 4  Susu Segar/UHT
+-- id: 5  Bubuk Vanila
+-- id: 6  Bubuk Coklat
+-- id: 7  Bubuk Stroberi
+-- id: 8  Jus/Sirup Sunkist
+-- id: 9  Jus/Sirup Sirsak
+-- id: 10 Jus/Sirup Mangga
+-- id: 11 Jus/Sirup Nenas
+-- id: 12 Jus/Sirup Delima
+-- id: 13 Jus/Sirup Anggur
+-- id: 14 Jeruk Kietna
+-- id: 15 Somboi Kering
+-- id: 16 Es Batu / Ice Block
+-- id: 17 Kantong Plastik / Takeaway Bag
 INSERT INTO inventory (id, name, stock, unit, min_stock, price, purchase_link, personal_review) VALUES
-  (1, 'Mangkok Bingsoo', 100, 'Pcs', 20, 1500, 'https://shopee.co.id/search?keyword=mangkok+bingsoo', 'Mangkok tebal premium, menjaga es tidak cepat meleleh. Pelanggan suka ukurannya.'),
-  (2, 'Sendok Plastik', 150, 'Pcs', 30, 500, 'https://shopee.co.id/search?keyword=sendok+plastik+bebek', 'Bahan kaku, tidak gampang patah untuk menyendok es serut padat.'),
-  (3, 'Susu Kental Manis', 50, 'Kaleng', 10, 12000, 'https://tokopedia.com/search?q=susu+kental+manis+carnation', 'Susu kental manis Carnation paling gurih untuk bingsoo.'),
-  (4, 'Susu Segar/UHT', 40, 'Liter', 8, 18000, 'https://tokopedia.com/search?q=greenfields+uht+full+cream+1l', 'Susu Greenfield UHT menghasilkan salju es krim yang lembut.'),
-  (5, 'Bubuk Perasa (Coklat, Vanila, Stroberi)', 10, 'Kg', 2, 60000, '', 'Gunakan merk premium agar rasa buahnya terasa alami, tidak serik di tenggorokan.'),
-  (6, 'Buah Segar & Sirup (Sunkist, Sirsak, Mangga, Nanas, Delima, Anggur)', 25, 'Kg/Botol', 5, 45000, '', 'Beli langsung dari Pasar Buah Nangka untuk harga grosir dan kualitas segar harian.'),
-  (7, 'Jeruk Kietna & Somboi Kering', 15, 'Kg', 3, 50000, '', 'Suplier Medan. Jeruk kietna harum dan matang pohon, somboi kering asin sedang.'),
-  (8, 'Es Batu / Ice Block', 30, 'Pack', 5, 10000, '', 'Es kristal higienis dari depo es lokal terdekat.'),
-  (9, 'Kantong Plastik / Takeaway Bag', 200, 'Pcs', 40, 400, 'https://shopee.co.id/search?keyword=plastik+tali+gelas+takeaway', 'Plastik berlogo khusus, muat 1-2 cup dengan sekat kokoh.')
-  ON DUPLICATE KEY UPDATE id=id;
+  (1,  'Mangkok Bingsoo',         30,  'Pcs',    10, 1500,  'https://shopee.co.id/search?keyword=mangkok+bingsoo',            'Mangkok tebal premium, menjaga es tidak cepat meleleh.'),
+  (2,  'Sendok Plastik',          50,  'Pcs',    20, 500,   'https://shopee.co.id/search?keyword=sendok+plastik+bebek',       'Bahan kaku, tidak gampang patah untuk menyendok es serut padat.'),
+  (3,  'Susu Kental Manis (SKM)', 10,  'Kaleng',  3, 12000, 'https://tokopedia.com/search?q=susu+kental+manis+carnation',    'Susu kental manis Carnation paling gurih untuk bingsoo.'),
+  (4,  'Susu Segar/UHT',          12,  'Liter',   3, 18000, 'https://tokopedia.com/search?q=greenfields+uht+full+cream+1l',  'Susu Greenfield UHT menghasilkan salju es krim yang lembut.'),
+  (5,  'Bubuk Vanila',            1,   'Kg',      0.5, 55000, '', 'Gunakan merk premium agar aroma vanila kuat dan alami.'),
+  (6,  'Bubuk Coklat',            1,   'Kg',      0.5, 60000, '', 'Merk premium untuk rasa coklat yang pekat, tidak pahit.'),
+  (7,  'Bubuk Stroberi',          1,   'Kg',      0.5, 55000, '', 'Pilih warna cerah natural, bukan pewarna buatan berlebih.'),
+  (8,  'Jus/Sirup Sunkist',       4,   'Botol',   1,  25000, '', 'Sirup jeruk sunkist segar untuk topping es buah.'),
+  (9,  'Jus/Sirup Sirsak',        4,   'Botol',   1,  25000, '', 'Sirsak sangat cocok dipadukan dengan salju susu.'),
+  (10, 'Jus/Sirup Mangga',        4,   'Botol',   1,  25000, '', 'Mangga harum dan manis, favorit pelanggan.'),
+  (11, 'Jus/Sirup Nenas',         3,   'Botol',   1,  22000, '', 'Nenas memberikan rasa asam manis yang segar.'),
+  (12, 'Jus/Sirup Delima',        3,   'Botol',   1,  28000, '', 'Delima memberikan warna merah cantik dan rasa unik.'),
+  (13, 'Jus/Sirup Anggur',        3,   'Botol',   1,  26000, '', 'Anggur ungu memberikan rasa manis sedikit asam.'),
+  (14, 'Jeruk Kietna',            2,   'Kg',      1,  50000, '', 'Suplier Medan. Jeruk kietna harum dan matang pohon.'),
+  (15, 'Somboi Kering',           1,   'Kg',      0.5, 45000, '', 'Somboi kering asin sedang, aroma khas Sumatera.'),
+  (16, 'Es Batu / Ice Block',     5,   'Pack',    2,  10000, '', 'Es kristal higienis dari depo es lokal terdekat.'),
+  (17, 'Kantong Plastik',         50,  'Pcs',     20, 400,  'https://shopee.co.id/search?keyword=plastik+tali+gelas+takeaway', 'Plastik muat 1-2 cup dengan sekat kokoh.');
 
--- Finance (mix of past and today entries)
+-- Finance
 INSERT INTO finance (type, amount, description, date) VALUES
-  ('pengeluaran', 150000, 'Restock awal bahan baku (SKM & Susu Segar)', CURDATE() - INTERVAL 5 DAY),
-  ('pemasukan', 45000, 'Penjualan Kasir: 3x Es Salju Mangga', CURDATE() - INTERVAL 4 DAY),
-  ('pemasukan', 25000, 'Penjualan Kasir: 1x Bingsoo Vanila, 1x Minuman Kietna Somboi', CURDATE() - INTERVAL 4 DAY),
-  ('pengeluaran', 75000, 'Pembayaran Listrik & Kebersihan', CURDATE() - INTERVAL 3 DAY),
-  ('pemasukan', 60000, 'Penjualan Kasir: 4x Es Salju Kietna', CURDATE() - INTERVAL 3 DAY),
-  ('pemasukan', 120000, 'Penjualan Kasir: 4x Bingsoo Vanila, 2x Es Salju Buah Sunkist', CURDATE());
+  ('pengeluaran', 150000, 'Restock awal bahan baku (SKM & Susu Segar)',          CURDATE() - INTERVAL 5 DAY),
+  ('pemasukan',   45000,  'Penjualan Kasir: 3x Es Salju Mangga',                 CURDATE() - INTERVAL 4 DAY),
+  ('pemasukan',   25000,  'Penjualan Kasir: 1x Bingsoo Vanila, 1x Kietna Somboi', CURDATE() - INTERVAL 4 DAY),
+  ('pengeluaran', 75000,  'Pembayaran Listrik & Kebersihan',                     CURDATE() - INTERVAL 3 DAY),
+  ('pemasukan',   60000,  'Penjualan Kasir: 4x Es Salju Kietna',                 CURDATE() - INTERVAL 3 DAY),
+  ('pemasukan',   120000, 'Penjualan Kasir: 4x Bingsoo Vanila, 2x Es Salju Buah Sunkist', CURDATE());
 
--- Ingredient Rules (Mapped per product_id)
+-- Ingredient Rules
 INSERT INTO ingredient_rules (product_id, inventory_id, amount) VALUES
-  -- Es Salju Buah Sunkist (1)
-  (1, 1, 1), (1, 2, 1), (1, 3, 0.05), (1, 6, 0.08), (1, 8, 0.1),
+  -- Es Salju Buah Sunkist (product 1)  → mangkok, sendok, SKM, jus sunkist, es batu
+  (1, 1, 1), (1, 2, 1), (1, 3, 0.05), (1, 8,  0.08), (1, 16, 0.1),
   -- Es Salju Buah Sirsak (2)
-  (2, 1, 1), (2, 2, 1), (2, 3, 0.05), (2, 6, 0.08), (2, 8, 0.1),
+  (2, 1, 1), (2, 2, 1), (2, 3, 0.05), (2, 9,  0.08), (2, 16, 0.1),
   -- Es Salju Buah Mangga (3)
-  (3, 1, 1), (3, 2, 1), (3, 3, 0.05), (3, 6, 0.08), (3, 8, 0.1),
+  (3, 1, 1), (3, 2, 1), (3, 3, 0.05), (3, 10, 0.08), (3, 16, 0.1),
   -- Es Salju Buah Nenas (4)
-  (4, 1, 1), (4, 2, 1), (4, 3, 0.05), (4, 6, 0.08), (4, 8, 0.1),
+  (4, 1, 1), (4, 2, 1), (4, 3, 0.05), (4, 11, 0.08), (4, 16, 0.1),
   -- Es Salju Buah Delima (5)
-  (5, 1, 1), (5, 2, 1), (5, 3, 0.05), (5, 6, 0.08), (5, 8, 0.1),
+  (5, 1, 1), (5, 2, 1), (5, 3, 0.05), (5, 12, 0.08), (5, 16, 0.1),
   -- Es Salju Buah Anggur (6)
-  (6, 1, 1), (6, 2, 1), (6, 3, 0.05), (6, 6, 0.08), (6, 8, 0.1),
-  
-  -- Bingsoo Vanila (7)
-  (7, 1, 1), (7, 2, 1), (7, 3, 0.05), (7, 4, 0.15), (7, 5, 0.04), (7, 8, 0.1),
-  -- Bingsoo Coklat (8)
-  (8, 1, 1), (8, 2, 1), (8, 3, 0.05), (8, 4, 0.15), (8, 5, 0.04), (8, 8, 0.1),
-  -- Bingsoo Stroberi (9)
-  (9, 1, 1), (9, 2, 1), (9, 3, 0.05), (9, 4, 0.15), (9, 5, 0.04), (9, 8, 0.1),
-  
-  -- Es Salju Kietna (10)
-  (10, 2, 1), (10, 7, 0.05), (10, 8, 0.1), (10, 9, 1),
-  -- Minuman Kietna Nanas (11)
-  (11, 2, 1), (11, 7, 0.05), (11, 8, 0.1), (11, 9, 1),
-  -- Minuman Kietna Somboi (12)
-  (12, 2, 1), (12, 7, 0.03), (12, 8, 0.1), (12, 9, 1);
+  (6, 1, 1), (6, 2, 1), (6, 3, 0.05), (6, 13, 0.08), (6, 16, 0.1),
 
--- Orders & Order Items
+  -- Bingsoo Vanila (7)    → mangkok, sendok, SKM, susu UHT, bubuk vanila, es batu
+  (7, 1, 1), (7, 2, 1), (7, 3, 0.05), (7, 4, 0.15), (7, 5, 0.04), (7, 16, 0.1),
+  -- Bingsoo Coklat (8)
+  (8, 1, 1), (8, 2, 1), (8, 3, 0.05), (8, 4, 0.15), (8, 6, 0.04), (8, 16, 0.1),
+  -- Bingsoo Stroberi (9)
+  (9, 1, 1), (9, 2, 1), (9, 3, 0.05), (9, 4, 0.15), (9, 7, 0.04), (9, 16, 0.1),
+
+  -- Es Salju Kietna (10)  → sendok, jeruk kietna, es batu, kantong plastik
+  (10, 2, 1), (10, 14, 0.05), (10, 16, 0.1), (10, 17, 1),
+  -- Minuman Kietna Nanas (11)
+  (11, 2, 1), (11, 14, 0.05), (11, 11, 0.05), (11, 16, 0.1), (11, 17, 1),
+  -- Minuman Kietna Somboi (12)
+  (12, 2, 1), (12, 15, 0.03), (12, 16, 0.1), (12, 17, 1);
+
+-- Sample Orders & Order Items
 INSERT INTO orders (label, topping_price, subtotal, total, status, created_at) VALUES
-  ('Order #1', 2000, 45000, 47000, 'paid', NOW()),
-  ('Order #2', 0, 15000, 15000, 'antrian', NOW()),
-  ('Order #3', 1500, 60000, 61500, 'paid', NOW());
+  ('Pesanan #1', 0, 45000, 45000, 'paid',    NOW()),
+  ('Pesanan #2', 0, 15000, 15000, 'antrian', NOW()),
+  ('Pesanan #3', 0, 60000, 60000, 'paid',    NOW());
 
 INSERT INTO order_items (order_id, product_id, quantity, toppings) VALUES
   (1, 1, 2, NULL),
@@ -87,3 +111,4 @@ INSERT INTO order_items (order_id, product_id, quantity, toppings) VALUES
   (2, 2, 1, NULL),
   (3, 5, 3, NULL),
   (3, 9, 1, NULL);
+

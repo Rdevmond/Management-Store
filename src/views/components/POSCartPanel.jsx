@@ -37,54 +37,57 @@ export default function POSCartPanel({
           </div>
         ) : (
           cart.map(item => {
-            const toppCost = Object.values(item.toppings).filter(Boolean).length * toppingPrice * item.quantity;
-            const itemTotal = item.product.price * item.quantity + toppCost;
+            const itemTotal = item.product.price * item.quantity;
             return (
-              <div key={item.product.id} className="pb-2.5 border-b border-slate-100 last:border-0 space-y-1.5 animate-fade-in-fast">
-                <div className="flex items-start justify-between gap-2">
+              <div key={item.product.id} className="py-3 border-b border-slate-100 last:border-0 animate-fade-in-fast">
+                <div className="flex items-center justify-between gap-2">
+                  {/* Name + price stacked on left */}
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-bold text-slate-900 leading-tight truncate pr-2">{item.product.name}</p>
-                      <span className="text-xs font-extrabold text-green-600 shrink-0">{fmt(itemTotal)}</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-1">
-                      <div className="flex gap-1">
-                        {['nanas', 'meses'].map(key => (
-                          <button
-                            key={key}
-                            onClick={() => toggleCartTopping(item.product.id, key)}
-                            className={`px-2 py-0.5 rounded-md text-xs font-bold transition-all border ${
-                              item.toppings[key] ? 'bg-green-600 text-white border-green-600' : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300'
-                            }`}
-                          >
-                            {key}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white">
-                          <button
-                            onClick={() => updateCartQuantity(item.product.id, item.quantity - 1)}
-                            className="w-5 h-5 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors"
-                          >
-                            <FiMinus className="text-[10px]" />
-                          </button>
-                          <span className="w-5 text-center text-xs font-bold text-slate-900">{item.quantity}</span>
-                          <button
-                            onClick={() => updateCartQuantity(item.product.id, item.quantity + 1)}
-                            className="w-5 h-5 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors"
-                          >
-                            <FiPlus className="text-[10px]" />
-                          </button>
-                        </div>
+                    <p className="text-[13px] font-bold text-slate-800 leading-snug line-clamp-2">{item.product.name}</p>
+                    <span className="text-sm font-black text-green-600 mt-0.5 block">{fmt(itemTotal)}</span>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {[
+                        { key: 'messes', label: 'Messes' },
+                        { key: 'agarAgar', label: 'Agar-agar' },
+                        { key: 'nanas', label: 'Nanas' }
+                      ].map(t => (
                         <button
-                          onClick={() => updateCartQuantity(item.product.id, 0)}
-                          className="text-slate-355 hover:text-rose-600 hover:bg-rose-50 p-1 rounded-lg transition-colors"
+                          key={t.key}
+                          onClick={() => toggleCartTopping(item.product.id, t.key)}
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition-colors ${
+                            item.toppings?.[t.key]
+                              ? 'bg-amber-100 border-amber-200 text-amber-700'
+                              : 'bg-white border-slate-200 text-slate-400 hover:border-slate-300 hover:bg-slate-50'
+                          }`}
                         >
-                          <FiTrash2 className="text-xs" />
+                          {t.label}
                         </button>
-                      </div>
+                      ))}
                     </div>
+                  </div>
+                  {/* Quantity controls + delete on right, vertically centered */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                      <button
+                        onClick={() => updateCartQuantity(item.product.id, item.quantity - 1)}
+                        className="w-7 h-7 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors"
+                      >
+                        <FiMinus className="text-xs" />
+                      </button>
+                      <span className="w-8 text-center text-sm font-bold text-slate-900">{item.quantity}</span>
+                      <button
+                        onClick={() => updateCartQuantity(item.product.id, item.quantity + 1)}
+                        className="w-7 h-7 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors"
+                      >
+                        <FiPlus className="text-xs" />
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => updateCartQuantity(item.product.id, 0)}
+                      className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 rounded-lg transition-colors border border-transparent hover:border-rose-100"
+                    >
+                      <FiTrash2 className="text-sm" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -96,9 +99,6 @@ export default function POSCartPanel({
         <div className="flex justify-between items-end bg-white border border-slate-200 shadow-sm rounded-xl px-3 py-2">
           <div className="space-y-0.5">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Total Pembayaran</span>
-            {toppingPrice > 0 && cartToppingTotal > 0 && (
-              <span className="text-[10px] font-semibold text-slate-400 font-semibold mt-0.5 block">Termasuk topping {fmt(cartToppingTotal)}</span>
-            )}
           </div>
           <span className="text-sm font-black text-slate-900">{fmt(cartTotal)}</span>
         </div>
@@ -120,19 +120,21 @@ export default function POSCartPanel({
             </div>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-2 text-xs">
+        <div className="flex gap-2 text-xs">
           <button
             onClick={addToOrderQueue}
-            className="py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-extrabold rounded-xl transition-all active:scale-95 uppercase flex items-center justify-center gap-1"
+            className="flex-1 min-w-0 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-extrabold rounded-xl transition-all active:scale-95 uppercase flex items-center justify-center gap-1.5 overflow-hidden"
           >
-            <FiClock className="text-slate-400 text-xs" /> Simpan Antrian
+            <FiClock className="text-slate-400 text-sm shrink-0" />
+            <span className="truncate text-[10px] tracking-wide">Simpan Antrian</span>
           </button>
           <button
             onClick={handleCheckout}
             disabled={cartIssues.length > 0}
-            className="py-2.5 bg-green-600 hover:bg-brand-green text-white font-extrabold rounded-xl transition-all shadow-sm hover:shadow active:scale-95 uppercase disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-1"
+            className="flex-1 min-w-0 py-2.5 bg-green-600 hover:bg-brand-green text-white font-extrabold rounded-xl transition-all shadow-sm hover:shadow active:scale-95 uppercase disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-1.5 overflow-hidden"
           >
-            <FiCreditCard className="text-white text-xs animate-pulse" /> Proses Bayar
+            <FiCreditCard className="text-white text-sm shrink-0" />
+            <span className="truncate text-[10px] tracking-wide">Proses Bayar</span>
           </button>
         </div>
       </div>

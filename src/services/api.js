@@ -1,24 +1,43 @@
+import axios from 'axios';
+
 const BASE = '/api';
-async function request(path, options = {}) {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    ...options,
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
-  const contentType = res.headers.get('content-type');
-  let data;
-  if (contentType && contentType.includes('application/json')) {
-    data = await res.json();
-  } else {
-    const text = await res.text();
-    if (!res.ok) {
-      const cleanError = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-      throw new Error(cleanError || `HTTP Error ${res.status}`);
+
+const api = axios.create({
+  baseURL: BASE,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+api.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    let errorMessage = 'Terjadi kesalahan server.';
+    if (error.response) {
+      if (error.response.data && error.response.data.error) {
+        errorMessage = error.response.data.error;
+      } else if (typeof error.response.data === 'string') {
+        const cleanError = error.response.data.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        errorMessage = cleanError || `HTTP Error ${error.response.status}`;
+      } else if (error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+    } else if (error.request) {
+      errorMessage = 'Tidak ada respons dari server. Periksa koneksi Anda.';
+    } else {
+      errorMessage = error.message;
     }
-    data = { message: text };
+    return Promise.reject(new Error(errorMessage));
   }
-  if (!res.ok) throw new Error(data.error || 'Terjadi kesalahan server.');
-  return data;
+);
+
+async function request(path, options = {}) {
+  const config = {
+    method: options.method || 'GET',
+    url: path,
+    data: options.body,
+  };
+  return api(config);
 }
 export const apiPost = (path, data) => request(path, { method: 'POST', body: data });
 export const apiLogin = (username, password) => request('/users/login', { method: 'POST', body: { username, password } });

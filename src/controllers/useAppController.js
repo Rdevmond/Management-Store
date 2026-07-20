@@ -112,13 +112,7 @@ export default function useAppController(navigate) {
   }, [inventory]);
   const cartSubtotal = useMemo(() =>
     cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0), [cart]);
-  const cartToppingTotal = useMemo(() => {
-    if (toppingPrice === 0) return 0;
-    return cart.reduce((acc, item) => {
-      const tops = Object.values(item.toppings).filter(Boolean).length;
-      return acc + tops * toppingPrice * item.quantity;
-    }, 0);
-  }, [cart, toppingPrice]);
+  const cartToppingTotal = useMemo(() => 0, []);
   const cartTotal = useMemo(() => cartSubtotal + cartToppingTotal, [cartSubtotal, cartToppingTotal]);
   const cartChange = useMemo(() => {
     const paid = parseFloat(cashPaid) || 0;
@@ -130,7 +124,7 @@ export default function useAppController(navigate) {
       const user = await apiLogin(username, password);
       setActiveUser(user);
       triggerAlert(`Selamat datang kembali, ${user.username}!`, 'success');
-      navigate(user.role === 'admin' ? '/' : '/pos');
+      navigate(user.role === 'pemilik' ? '/' : '/pos');
       return true;
     } catch (err) {
       setAuthError(err.message);
@@ -380,7 +374,7 @@ export default function useAppController(navigate) {
       newCart = cart.map(item => item.product.id === product.id
         ? { ...item, quantity: item.quantity + 1 } : item);
     } else {
-      newCart = [...cart, { product, quantity: 1, toppings: { nanas: false, meses: false } }];
+      newCart = [...cart, { product, quantity: 1, toppings: { messes: false, agarAgar: false, nanas: false } }];
     }
     const issues = checkCartFeasibility(newCart, inventory);
     if (issues.length > 0) {

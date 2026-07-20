@@ -87,9 +87,8 @@ export default function UserModal({
                 onChange={handleChange}
                 className="block w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600/20 focus:border-green-600 text-xs font-semibold transition-all appearance-none"
               >
-                <option value="admin">Administrator</option>
+                <option value="pemilik">Administrator</option>
                 <option value="kasir">Kasir</option>
-                <option value="staff">Staff</option>
               </select>
             </div>
           </div>

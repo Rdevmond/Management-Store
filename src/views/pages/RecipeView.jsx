@@ -1,23 +1,32 @@
 import { useState, useMemo } from 'react';
 import { FiPlus, FiTrash2, FiSave, FiList, FiBox, FiSearch } from 'react-icons/fi';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import Card from '../components/ui/Card';
+
 export default function RecipeView({ controller }) {
   const { products, inventory, ingredientRules, handleSaveRecipe } = controller;
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [currentRecipe, setCurrentRecipe] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState('');
+  
   const filteredProducts = useMemo(() => {
-    const q = searchQuery.toLowerCase();
+    const q = searchKeyword.toLowerCase();
     return products.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
-  }, [products, searchQuery]);
+  }, [products, searchKeyword]);
+  
   const selectedProduct = useMemo(() => products.find(p => p.id === selectedProductId), [products, selectedProductId]);
+  
   const handleSelectProduct = (product) => {
     setSelectedProductId(product.id);
     const existingRules = ingredientRules[product.id] || [];
     setCurrentRecipe(existingRules.map(r => ({ inventory_id: r.id, amount: r.amount })));
   };
+  
   const handleMaterialChange = (index, field, value) => {
     setCurrentRecipe(prev => prev.map((item, idx) => idx === index ? { ...item, [field]: field === 'inventory_id' ? parseInt(value) : value } : item));
   };
+  
   const handleSave = async () => {
     if (!selectedProductId) return;
     const validRules = currentRecipe.filter(r => r.inventory_id && parseFloat(r.amount) > 0);
@@ -27,6 +36,7 @@ export default function RecipeView({ controller }) {
     }
     await handleSaveRecipe(selectedProductId, validRules);
   };
+  
   return (
     <div className="flex flex-col h-full animate-fade-in text-slate-800">
       <div className="mb-6 flex justify-between items-end">
@@ -37,20 +47,19 @@ export default function RecipeView({ controller }) {
           <p className="text-sm text-slate-500 mt-1">Atur komposisi bahan baku untuk tiap-tiap menu.</p>
         </div>
       </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 flex-1 min-h-0">
-        <div className="md:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col min-h-0">
+        <Card className="md:col-span-4 flex flex-col min-h-0 overflow-hidden" bodyClassName="p-0 flex flex-col h-full">
           <div className="px-5 py-4 border-b border-slate-100 font-semibold text-slate-700 flex flex-col gap-3 shrink-0">
             <span>Pilih Menu</span>
-            <div className="relative">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Cari menu..."
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-green-600/20 focus:border-green-600"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+            <Input
+              placeholder="Cari menu..."
+              icon={<FiSearch />}
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              className="h-10 text-sm"
+              containerClassName="w-full"
+            />
           </div>
           <div className="p-3 space-y-2 flex-1 overflow-y-auto min-h-0">
             {filteredProducts.map(p => {
@@ -76,8 +85,9 @@ export default function RecipeView({ controller }) {
               )
             })}
           </div>
-        </div>
-        <div className={`md:col-span-8 bg-white md:rounded-2xl border-0 md:border border-slate-100 shadow-sm flex flex-col min-h-0 ${selectedProductId ? 'fixed inset-0 z-50 md:relative md:inset-auto md:z-auto' : 'hidden md:flex'}`}>
+        </Card>
+        
+        <div className={`md:col-span-8 bg-white md:rounded-2xl border-0 md:border border-slate-100 shadow-sm flex flex-col min-h-0 ${selectedProductId ? 'fixed inset-0 z-[60] md:relative md:inset-auto md:z-auto' : 'hidden md:flex'}`}>
           {selectedProduct ? (
             <>
               <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap sm:flex-nowrap justify-between items-center bg-slate-50/50 rounded-t-2xl shrink-0 gap-3">
@@ -87,20 +97,23 @@ export default function RecipeView({ controller }) {
                   <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mt-0.5">{selectedProduct.category}</p>
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <button 
+                  <Button 
+                    variant="outline" 
                     onClick={() => setSelectedProductId(null)}
-                    className="md:hidden flex-1 sm:flex-none px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-semibold rounded-xl transition-all"
+                    className="md:hidden flex-1 sm:flex-none"
                   >
                     Kembali
-                  </button>
-                  <button 
+                  </Button>
+                  <Button 
                     onClick={handleSave}
-                    className="flex-1 sm:flex-none px-5 py-2 bg-green-600 hover:bg-brand-green text-white text-sm font-semibold rounded-xl transition-all shadow-sm flex justify-center items-center gap-2"
+                    icon={<FiSave />}
+                    className="flex-1 sm:flex-none px-6"
                   >
-                    <FiSave /> Simpan
-                  </button>
+                    Simpan
+                  </Button>
                 </div>
               </div>
+              
               <div className="p-6 bg-slate-50/30 rounded-b-2xl flex-1 overflow-y-auto min-h-0">
                 <div className="space-y-4">
                   {currentRecipe.length === 0 ? (
@@ -142,13 +155,14 @@ export default function RecipeView({ controller }) {
                           </div>
                         </div>
                         <div className="pt-6">
-                          <button 
+                          <Button 
+                            variant="ghost"
                             onClick={() => setCurrentRecipe(currentRecipe.filter((_, i) => i !== idx))}
-                            className="w-10 h-10 flex items-center justify-center text-rose-400 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-colors border border-transparent hover:border-rose-100"
+                            className="text-rose-400 hover:bg-rose-50 hover:text-rose-600 px-2"
                             title="Hapus Bahan"
                           >
-                            <FiTrash2 />
-                          </button>
+                            <FiTrash2 className="text-lg" />
+                          </Button>
                         </div>
                       </div>
                     ))

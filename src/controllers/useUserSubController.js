@@ -20,7 +20,7 @@ export default function useUserSubController(navigate, triggerAlert) {
       const user = await apiLogin(username, password);
       setActiveUser(user);
       triggerAlert(`Selamat datang kembali, ${user.username}!`, 'success');
-      navigate(user.role === 'admin' ? '/' : '/pos');
+      navigate(user.role === 'pemilik' ? '/' : '/pos');
       return true;
     } catch (err) {
       setAuthError(err.message);

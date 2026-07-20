@@ -102,7 +102,7 @@ export default function LoginView({ controller }) {
               <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Username</label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-350 pointer-events-none"><FiUser className="w-4 h-4" /></span>
-                <input type="text" required className={inputBase} placeholder="admin atau kasir"
+                <input type="text" required className={inputBase} placeholder="Username"
                   value={loginForm.username} onChange={e => setLoginForm({ ...loginForm, username: e.target.value })} />
               </div>
             </div>

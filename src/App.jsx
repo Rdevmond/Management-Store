@@ -11,10 +11,11 @@ const POSView = lazy(() => import('./views/pages/POSView'));
 const ProductView = lazy(() => import('./views/pages/ProductView'));
 const RecipeView = lazy(() => import('./views/pages/RecipeView'));
 const UserManagementView = lazy(() => import('./views/pages/UserManagementView'));
-const ResetVerify = lazy(() => import('./views/pages/ResetVerify'));
-const ResetPassword = lazy(() => import('./views/pages/ResetPassword'));
 const FinanceView = lazy(() => import('./views/pages/FinanceView'));
 const InventoryView = lazy(() => import('./views/pages/InventoryView'));
+const ReceiptView = lazy(() => import('./views/pages/ReceiptView'));
+const NotFoundView = lazy(() => import('./views/pages/NotFoundView'));
+
 function ProtectedRoute({ controller, allowedRoles, children }) {
   if (!controller.activeUser) {
     return <Navigate to="/login" replace />;
@@ -26,7 +27,7 @@ function ProtectedRoute({ controller, allowedRoles, children }) {
 }
 function PublicRoute({ controller, children }) {
   if (controller.activeUser) {
-    return <Navigate to={controller.activeUser.role === 'admin' ? '/' : '/pos'} replace />;
+    return <Navigate to={controller.activeUser.role === 'pemilik' ? '/' : '/pos'} replace />;
   }
   return children;
 }
@@ -47,8 +48,6 @@ function AppContent() {
         <Routes>
           {}
           <Route path="/login" element={<PublicRoute controller={controller}><AuthLayout><LoginView controller={controller} /></AuthLayout></PublicRoute>} />
-          <Route path="/reset-verify" element={<PublicRoute controller={controller}><ResetVerify controller={controller} /></PublicRoute>} />
-          <Route path="/reset-password" element={<PublicRoute controller={controller}><ResetPassword controller={controller} /></PublicRoute>} />
           {}
           <Route
             path="/"
@@ -62,7 +61,7 @@ function AppContent() {
             <Route
               index
               element={
-                controller.activeUser?.role === 'admin' ? (
+                controller.activeUser?.role === 'pemilik' ? (
                   <DashboardView controller={controller} />
                 ) : (
                   <Navigate to="/pos" replace />
@@ -89,7 +88,7 @@ function AppContent() {
             <Route
               path="resep"
               element={
-                <ProtectedRoute controller={controller} allowedRoles={['admin']}>
+                <ProtectedRoute controller={controller} allowedRoles={['pemilik']}>
                   <RecipeView controller={controller} />
                 </ProtectedRoute>
               }
@@ -97,7 +96,7 @@ function AppContent() {
             <Route
               path="users"
               element={
-                <ProtectedRoute controller={controller} allowedRoles={['admin']}>
+                <ProtectedRoute controller={controller} allowedRoles={['pemilik']}>
                   <UserManagementView controller={controller} />
                 </ProtectedRoute>
               }
@@ -105,7 +104,7 @@ function AppContent() {
             <Route
               path="inventaris"
               element={
-                <ProtectedRoute controller={controller} allowedRoles={['admin']}>
+                <ProtectedRoute controller={controller} allowedRoles={['pemilik']}>
                   <InventoryView controller={controller} />
                 </ProtectedRoute>
               }
@@ -113,13 +112,14 @@ function AppContent() {
             <Route
               path="laporan"
               element={
-                <ProtectedRoute controller={controller} allowedRoles={['admin']}>
+                <ProtectedRoute controller={controller} allowedRoles={['pemilik']}>
                   <FinanceView controller={controller} />
                 </ProtectedRoute>
               }
             />
-            {}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="struk/:id" element={<ReceiptView />} />
+            {/* Fallback 404 Route */}
+            <Route path="*" element={<NotFoundView />} />
           </Route>
         </Routes>
       </Suspense>

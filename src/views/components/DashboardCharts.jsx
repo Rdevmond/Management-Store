@@ -1,4 +1,9 @@
 import { FiPieChart, FiShoppingBag } from 'react-icons/fi';
+const fmtShort = (n) => {
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace('.0','') + ' jt';
+  if (n >= 1000)    return Math.round(n / 1000) + ' rb';
+  return String(n);
+};
 export default function DashboardCharts({
   activeChart,
   chartData,
@@ -31,13 +36,13 @@ export default function DashboardCharts({
                 <rect x={`${xPct}%`} dx="8" y={190 - eh} width="16" height={eh || 0} fill="var(--color-brand-green)" rx="3" opacity="0.80" style={{ transform: 'translateX(8px)' }}>
                   <title>Pengeluaran: {fmt(d.expense)}</title>
                 </rect>
-                <text x={`${xPct}%`} dx="7" y="210" textAnchor="middle" fill="#94a3b8" fontSize="10" fontWeight="600">{d.label}</text>
+                <text x={`${xPct}%`} dx="7" y="210" textAnchor="middle" fill="#94a3b8" fontSize="11" fontWeight="600">{d.label}</text>
               </g>
             );
           })}
-          <text x="48" y="44" textAnchor="end" fill="#cbd5e1" fontSize="10" fontWeight="600">{fmt(maxChartVal)}</text>
-          <text x="48" y="117" textAnchor="end" fill="#cbd5e1" fontSize="10" fontWeight="600">{fmt(maxChartVal / 2)}</text>
-          <text x="48" y="194" textAnchor="end" fill="#cbd5e1" fontSize="10" fontWeight="600">Rp 0</text>
+          <text x="50" y="44" textAnchor="end" fill="#94a3b8" fontSize="11" fontWeight="700">{fmtShort(maxChartVal)}</text>
+          <text x="50" y="117" textAnchor="end" fill="#94a3b8" fontSize="11" fontWeight="700">{fmtShort(maxChartVal / 2)}</text>
+          <text x="50" y="194" textAnchor="end" fill="#94a3b8" fontSize="11" fontWeight="700">0</text>
         </svg>
       )}
       {activeChart === 'categorySales' && (

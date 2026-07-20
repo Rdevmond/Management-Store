@@ -6,6 +6,9 @@ import POSRightPanel from '../components/POSRightPanel';
 import ProductMedia from '../components/ProductMedia';
 import CheckoutReceiptModal from '../components/CheckoutReceiptModal';
 import QueuePaymentModal from '../components/QueuePaymentModal';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import Card from '../components/ui/Card';
 
 const fmt = (n) => 'Rp ' + Number(n).toLocaleString('id-ID');
 
@@ -82,80 +85,68 @@ export default function POSView({ controller }) {
             </div>
           </div>
         )}
-        <div className="bg-white rounded-3xl border border-slate-100/80 shadow-[0_4px_20px_rgba(0,0,0,0.015)] p-5 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-center">
-            <div className="relative flex-1 w-full">
-              <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
-              <input
-                type="text"
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 focus:bg-white transition-all placeholder:text-slate-400 text-slate-800"
-                placeholder="Cari nama menu..."
-                value={posSearch}
-                onChange={e => setPosSearch(e.target.value)}
-              />
-            </div>
-            <button
-              onClick={() => setToppingPrice(p => p === 0 ? 2000 : 0)}
-              className={`shrink-0 w-full sm:w-auto px-5 py-3 rounded-2xl text-xs font-black transition-all duration-300 border uppercase tracking-wider ${
-                toppingPrice > 0
-                  ? 'bg-green-600 text-white border-green-600 shadow-md shadow-green-100'
-                  : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100/70 hover:border-slate-350'
-              }`}
-            >
-              Topping: {toppingPrice > 0 ? `+${fmt(2000)}` : 'Gratis'}
-            </button>
+        
+        <Card className="rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.015)] border-slate-100/80 p-0" bodyClassName="p-5 space-y-4">
+          <div className="flex items-center">
+            <Input
+              placeholder="Cari nama menu..."
+              icon={<FiSearch />}
+              value={posSearch}
+              onChange={e => setPosSearch(e.target.value)}
+              containerClassName="flex-1 w-full"
+              className="h-11 text-xs rounded-2xl bg-slate-50 focus:bg-white"
+            />
           </div>
           <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-50">
             {CATEGORIES.map(cat => (
-              <button key={cat} onClick={() => setPosCategory(cat)}
-                className={`px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all duration-200 border ${
-                  posCategory === cat
-                    ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                    : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100/50 hover:border-slate-300'
-                }`}>
+              <Button 
+                key={cat} 
+                onClick={() => setPosCategory(cat)}
+                size="sm"
+                variant={posCategory === cat ? 'secondary' : 'outline'}
+                className={`rounded-xl text-[10px] font-bold tracking-widest uppercase transition-all duration-200 border ${posCategory === cat ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-900'}`}
+              >
                 {cat}
-              </button>
+              </Button>
             ))}
           </div>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 flex-1 overflow-y-auto min-h-0 pr-1 pb-2">
+        </Card>
+        
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 flex-1 overflow-y-auto min-h-0 pr-1 pb-2 auto-rows-max items-start">
           {filtered.map(prod => {
             const stockCount = getProductStock(prod);
             const isOutOfStock = stockCount === 0;
             return (
-              <div key={prod.id}
+              <Card 
+                key={prod.id}
                 onClick={() => { if (!isOutOfStock) addToCart(prod); }}
-                className={`bg-white border border-slate-100/80 rounded-3xl p-4 shadow-[0_4px_16px_rgba(0,0,0,0.01)] hover:shadow-lg hover:-translate-y-1 hover:border-green-600/20 cursor-pointer transition-all duration-300 flex flex-col gap-3 group relative ${
+                className={`rounded-3xl border-slate-100/80 shadow-[0_4px_16px_rgba(0,0,0,0.01)] hover:shadow-lg hover:-translate-y-1 hover:border-green-600/20 cursor-pointer transition-all duration-300 group ${
                   isOutOfStock ? 'opacity-50 bg-slate-50/50 cursor-not-allowed select-none' : ''
                 }`}
+                bodyClassName="p-4 flex flex-col gap-3"
               >
                 <div className="relative flex items-center justify-between">
-                  <ProductMedia media={prod.image} name={prod.name} size="w-14 h-14" />
+                  <ProductMedia media={prod.image} name={prod.name} size="w-16 h-16" />
                   <div className="flex flex-col items-end gap-1.5 max-w-[52%]">
-                    <span className="text-[9px] font-black text-slate-400 border border-slate-100 bg-slate-50 px-2 py-0.5 rounded-lg uppercase tracking-wider text-right truncate">
+                    <span className="text-[10px] font-semibold text-slate-400 border border-slate-100 bg-slate-50 px-2 py-0.5 rounded-lg uppercase tracking-wider text-right truncate">
                       {prod.category.split(' / ')[0]}
                     </span>
                     {isOutOfStock ? (
-                      <span className="text-[9px] font-black text-rose-600 bg-rose-50 border border-rose-100/55 px-2 py-0.5 rounded-lg uppercase tracking-wider">Habis</span>
+                      <span className="text-[10px] font-bold text-rose-600 bg-rose-50 border border-rose-100/55 px-2 py-0.5 rounded-lg uppercase tracking-wider">Habis</span>
                     ) : stockCount <= 5 ? (
-                      <span className="text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-100/55 px-2 py-0.5 rounded-lg uppercase tracking-wider animate-pulse">Sisa {stockCount}</span>
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-100/55 px-2 py-0.5 rounded-lg uppercase tracking-wider animate-pulse">Sisa {stockCount}</span>
                     ) : (
-                      <span className="text-[9px] font-black text-green-650 bg-emerald-50 border border-emerald-100/50 px-2 py-0.5 rounded-lg uppercase tracking-wider">Stok {stockCount}</span>
+                      <span className="text-[10px] font-bold text-green-650 bg-emerald-50 border border-emerald-100/50 px-2 py-0.5 rounded-lg uppercase tracking-wider">Stok {stockCount}</span>
                     )}
                   </div>
                 </div>
-                <div className="flex-1 flex flex-col justify-between">
-                  <h4 className="text-xs font-bold text-slate-800 leading-snug line-clamp-2 group-hover:text-green-600 transition-colors duration-200">{prod.name}</h4>
-                  <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-50">
-                    <span className="text-xs font-black text-slate-700">{fmt(prod.price)}</span>
-                    <span className={`text-[10px] font-black px-3 py-1.5 rounded-xl border uppercase tracking-wider transition-all duration-300 ${
-                      isOutOfStock 
-                        ? 'text-slate-400 bg-slate-150 border-slate-200' 
-                        : 'text-green-650 bg-emerald-50 border-emerald-100/60 group-hover:bg-green-600 group-hover:text-white group-hover:border-green-600'
-                    }`}>{isOutOfStock ? 'Habis' : '+ Pilih'}</span>
-                  </div>
+                <div className="flex flex-col mt-3 mb-1">
+                  <h4 className="text-base font-bold text-slate-800 leading-snug line-clamp-2 group-hover:text-green-600 transition-colors duration-200">{prod.name}</h4>
                 </div>
-              </div>
+                <div className="pt-3 border-t border-slate-50 flex items-center justify-between mt-auto">
+                  <span className="text-lg font-black text-slate-900">{fmt(prod.price)}</span>
+                </div>
+              </Card>
             );
           })}
           {filtered.length === 0 && (

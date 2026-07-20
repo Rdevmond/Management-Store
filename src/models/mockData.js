@@ -1,5 +1,5 @@
 export const DEFAULT_USERS = [
-  { id: 1, username: 'admin', email: 'admin@essalju.com', password: 'admin123', role: 'admin', createdAt: '2026-05-19T10:00:00.000Z' },
+  { id: 1, username: 'pemilik', email: 'admin@essalju.com', password: 'admin123', role: 'pemilik', createdAt: '2026-05-19T10:00:00.000Z' },
   { id: 2, username: 'kasir', email: 'kasir@essalju.com', password: 'kasir123', role: 'kasir', createdAt: '2026-05-20T11:00:00.000Z' }
 ];
 export const DEFAULT_PRODUCTS = [

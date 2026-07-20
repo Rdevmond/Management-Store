@@ -35,15 +35,8 @@ export default function UserManagementView({ controller }) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-5 gap-3">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">Kelola Pengguna</h2>
-          <p className="text-slate-500 text-xs font-medium">Atur hak akses akun kasir, staff, dan administrator sistem.</p>
+          <p className="text-slate-500 text-xs font-medium">Atur hak akses akun kasir dan pemilik (administrator).</p>
         </div>
-        <button
-          onClick={onOpenAdd}
-          className="px-4 py-2.5 bg-green-600 hover:bg-brand-green text-white font-bold rounded-xl text-xs shadow-sm transition-all flex items-center justify-center gap-1.5"
-        >
-          <FiPlus className="text-base" />
-          <span>TAMBAH PENGGUNA</span>
-        </button>
       </div>
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto border-b border-slate-100">
@@ -67,7 +60,7 @@ export default function UserManagementView({ controller }) {
                 users.map((u) => {
                   const initials = u.username.slice(0, 2).toUpperCase();
                   const roleCls = 
-                    u.role === 'admin' 
+                    u.role === 'pemilik' 
                       ? 'bg-sky-50 text-sky-700 border-sky-100/50' 
                       : u.role === 'kasir' 
                       ? 'bg-emerald-50 text-emerald-700 border-emerald-100/50' 

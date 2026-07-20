@@ -88,8 +88,8 @@ export default function DashboardView({ controller }) {
           valueCls={allTimeSummary.profit >= 0 ? 'text-slate-800' : 'text-rose-600'}
         />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 flex-1 min-h-0">
-        <div className="md:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col min-h-[350px]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5" style={{ minHeight: '320px', height: '320px' }}>
+        <div className="md:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col h-full">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
               <FiActivity className="text-green-600" /> Grafik Visual Dinamis
@@ -105,7 +105,7 @@ export default function DashboardView({ controller }) {
               ))}
             </div>
           </div>
-          <div className="flex-1 min-h-[250px]">
+          <div className="flex-1 min-h-0">
             <DashboardCharts
               activeChart={activeChart}
               chartData={chartData}
