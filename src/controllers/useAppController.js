@@ -53,10 +53,10 @@ export default function useAppController(navigate) {
           apiGetInventory(),
           apiGetIngredientRules(),
         ]);
-        setUsers(u);
-        setProducts(p);
-        setInventory(inv);
-        setIngredientRules(rules);
+        setUsers(Array.isArray(u) ? u : []);
+        setProducts(Array.isArray(p) ? p : []);
+        setInventory(Array.isArray(inv) ? inv : []);
+        setIngredientRules(rules && typeof rules === 'object' && !Array.isArray(rules) ? rules : {});
       } catch (err) {
         triggerAlert('Gagal terhubung ke server database. Pastikan backend sudah berjalan.', 'error');
         console.error(err);
@@ -68,7 +68,7 @@ export default function useAppController(navigate) {
   }, [triggerAlert]);
   useEffect(() => {
     apiGetFinance(startDate, endDate)
-      .then(setFinance)
+      .then(data => setFinance(Array.isArray(data) ? data : []))
       .catch(console.error);
   }, [startDate, endDate]);
   useEffect(() => {
@@ -76,11 +76,11 @@ export default function useAppController(navigate) {
   }, [activeUser]);
   const refreshInventory = useCallback(async () => {
     const inv = await apiGetInventory();
-    setInventory(inv);
+    setInventory(Array.isArray(inv) ? inv : []);
   }, []);
   const refreshFinance = useCallback(async () => {
     const fin = await apiGetFinance(startDate, endDate);
-    setFinance(fin);
+    setFinance(Array.isArray(fin) ? fin : []);
   }, [startDate, endDate]);
   const refreshIngredientRules = useCallback(async () => {
     const rules = await apiGetIngredientRules();
