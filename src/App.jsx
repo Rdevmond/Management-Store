@@ -36,19 +36,15 @@ function AppContent() {
   const controller = useAppController(navigate);
   return (
     <>
-      {}
       {controller.globalAlert && (
         <GlobalAlert 
           message={controller.globalAlert.message} 
           type={controller.globalAlert.type} 
         />
       )}
-      {}
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
-          {}
           <Route path="/login" element={<PublicRoute controller={controller}><AuthLayout><LoginView controller={controller} /></AuthLayout></PublicRoute>} />
-          {}
           <Route
             path="/"
             element={
@@ -57,7 +53,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           >
-            {}
             <Route
               index
               element={
@@ -68,7 +63,6 @@ function AppContent() {
                 )
               }
             />
-            {}
             <Route
               path="pos"
               element={
@@ -118,7 +112,7 @@ function AppContent() {
               }
             />
             <Route path="struk/:id" element={<ReceiptView />} />
-            {/* Fallback 404 Route */}
+            {/* Error 404 */}
             <Route path="*" element={<NotFoundView />} />
           </Route>
         </Routes>
