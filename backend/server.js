@@ -9,22 +9,25 @@ const PORT = process.env.PORT || 5113;
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Es Salju Backend API berjalan!' });
 });
+
 app.get('/api/users', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT id, username, email, role, created_at FROM users');
+    const { rows } = await pool.query('SELECT id, username, email, role, created_at FROM users');
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.post('/api/users/login', async (req, res) => {
   const { username, password } = req.body;
   try {
-    const [rows] = await pool.query(
-      'SELECT id, username, email, role, created_at FROM users WHERE username = ? AND password = ?',
+    const { rows } = await pool.query(
+      'SELECT id, username, email, role, created_at FROM users WHERE username = $1 AND password = $2',
       [username, password]
     );
     if (rows.length === 0) return res.status(401).json({ error: 'Username atau Password salah.' });
@@ -38,10 +41,10 @@ app.put('/api/users/:id', async (req, res) => {
   const { username, email, password, role } = req.body;
   try {
     if (password) {
-      await pool.query('UPDATE users SET username=?, email=?, password=?, role=? WHERE id=?',
+      await pool.query('UPDATE users SET username=$1, email=$2, password=$3, role=$4 WHERE id=$5',
         [username, email, password, role, req.params.id]);
     } else {
-      await pool.query('UPDATE users SET username=?, email=?, role=? WHERE id=?',
+      await pool.query('UPDATE users SET username=$1, email=$2, role=$3 WHERE id=$4',
         [username, email, role, req.params.id]);
     }
     res.json({ success: true });
@@ -49,9 +52,10 @@ app.put('/api/users/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.delete('/api/users/:id', async (req, res) => {
   try {
-    await pool.query('DELETE FROM users WHERE id = ?', [req.params.id]);
+    await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -62,7 +66,7 @@ app.post(['/api/forgot-password', '/api/users/forgot-password'], async (req, res
   const { username, email } = req.body;
   if (!username || !email) return res.status(400).json({ error: 'Username and email required.' });
   try {
-    const [rows] = await pool.query('SELECT id FROM users WHERE username = ? AND email = ?', [username, email]);
+    const { rows } = await pool.query('SELECT id FROM users WHERE username = $1 AND email = $2', [username, email]);
     if (rows.length === 0) return res.status(404).json({ error: 'User not found.' });
     
     const code = Math.floor(1000 + Math.random() * 9000).toString();
@@ -151,7 +155,7 @@ app.post(['/api/confirm-forgot', '/api/users/confirm-forgot'], async (req, res) 
   if (Date.now() > entry.expires) { delete forgotCodes[username]; return res.status(410).json({ error: 'Code expired.' }); }
   if (entry.code !== code) return res.status(401).json({ error: 'Invalid code.' });
   try {
-    await pool.query('UPDATE users SET password = ? WHERE username = ? AND email = ?', [newPassword, username, email]);
+    await pool.query('UPDATE users SET password = $1 WHERE username = $2 AND email = $3', [newPassword, username, email]);
     delete forgotCodes[username];
     res.json({ success: true });
   } catch (err) {
@@ -159,69 +163,76 @@ app.post(['/api/confirm-forgot', '/api/users/confirm-forgot'], async (req, res) 
     res.status(500).json({ error: err.message });
   }
 });
+
 app.get('/api/products', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM products');
+    const { rows } = await pool.query('SELECT * FROM products');
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.post('/api/products', async (req, res) => {
   const { name, category, price, image } = req.body;
   try {
-    const [result] = await pool.query(
-      'INSERT INTO products (name, category, price, image) VALUES (?, ?, ?, ?)',
+    const { rows: resultRows } = await pool.query(
+      'INSERT INTO products (name, category, price, image) VALUES ($1, $2, $3, $4) RETURNING id',
       [name, category, price, image]
     );
-    res.json({ id: result.insertId, name, category, price, image });
+    res.json({ id: resultRows[0].id, name, category, price, image });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.put('/api/products/:id', async (req, res) => {
   const { name, category, price, image } = req.body;
   try {
-    await pool.query('UPDATE products SET name=?, category=?, price=?, image=? WHERE id=?',
+    await pool.query('UPDATE products SET name=$1, category=$2, price=$3, image=$4 WHERE id=$5',
       [name, category, price, image, req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.delete('/api/products/:id', async (req, res) => {
   try {
-    await pool.query('DELETE FROM products WHERE id = ?', [req.params.id]);
+    await pool.query('DELETE FROM products WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.get('/api/inventory', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT *, min_stock as minStock, purchase_link as purchaseLink, personal_review as personalReview, image FROM inventory');
+    const { rows } = await pool.query('SELECT *, min_stock as "minStock", purchase_link as "purchaseLink", personal_review as "personalReview", image FROM inventory');
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.post('/api/inventory', async (req, res) => {
   const { name, stock, unit, minStock, price, purchaseLink, personalReview, image } = req.body;
   try {
-    const [result] = await pool.query(
-      'INSERT INTO inventory (name, stock, unit, min_stock, price, purchase_link, personal_review, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    const { rows: resultRows } = await pool.query(
+      'INSERT INTO inventory (name, stock, unit, min_stock, price, purchase_link, personal_review, image) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
       [name, stock, unit, minStock, price, purchaseLink || '', personalReview || '', image || null]
     );
-    res.json({ id: result.insertId, name, stock, unit, minStock, price, purchaseLink, personalReview, image });
+    res.json({ id: resultRows[0].id, name, stock, unit, minStock, price, purchaseLink, personalReview, image });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.put('/api/inventory/:id', async (req, res) => {
   const { name, stock, unit, minStock, price, purchaseLink, personalReview, image } = req.body;
   try {
     await pool.query(
-      'UPDATE inventory SET name=?, stock=?, unit=?, min_stock=?, price=?, purchase_link=?, personal_review=?, image=? WHERE id=?',
+      'UPDATE inventory SET name=$1, stock=$2, unit=$3, min_stock=$4, price=$5, purchase_link=$6, personal_review=$7, image=$8 WHERE id=$9',
       [name, stock, unit, minStock, price, purchaseLink || '', personalReview || '', image || null, req.params.id]
     );
     res.json({ success: true });
@@ -229,34 +240,37 @@ app.put('/api/inventory/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.post('/api/inventory/bulk-update', async (req, res) => {
   const { updates } = req.body;
-  const conn = await pool.getConnection();
+  const client = await pool.connect();
   try {
-    await conn.beginTransaction();
+    await client.query('BEGIN');
     for (const u of updates) {
-      await conn.query('UPDATE inventory SET stock = ? WHERE id = ?', [u.stock, u.id]);
+      await client.query('UPDATE inventory SET stock = $1 WHERE id = $2', [u.stock, u.id]);
     }
-    await conn.commit();
+    await client.query('COMMIT');
     res.json({ success: true });
   } catch (err) {
-    await conn.rollback();
+    await client.query('ROLLBACK');
     res.status(500).json({ error: err.message });
   } finally {
-    conn.release();
+    client.release();
   }
 });
+
 app.delete('/api/inventory/:id', async (req, res) => {
   try {
-    await pool.query('DELETE FROM inventory WHERE id = ?', [req.params.id]);
+    await pool.query('DELETE FROM inventory WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.get('/api/ingredient-rules', async (req, res) => {
   try {
-    const [rows] = await pool.query(
+    const { rows } = await pool.query(
       `SELECT ir.product_id, ir.inventory_id as id, ir.amount, inv.name as inv_name, inv.unit
        FROM ingredient_rules ir
        JOIN inventory inv ON inv.id = ir.inventory_id
@@ -273,113 +287,123 @@ app.get('/api/ingredient-rules', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.post('/api/ingredient-rules/:productId', async (req, res) => {
   const productId = req.params.productId;
   const { rules } = req.body;
-  const conn = await pool.getConnection();
+  const client = await pool.connect();
   try {
-    await conn.beginTransaction();
-    await conn.query('DELETE FROM ingredient_rules WHERE product_id = ?', [productId]);
+    await client.query('BEGIN');
+    await client.query('DELETE FROM ingredient_rules WHERE product_id = $1', [productId]);
     for (const rule of rules) {
       if (!rule.inventory_id || isNaN(parseFloat(rule.amount)) || parseFloat(rule.amount) <= 0) continue;
-      await conn.query(
-        'INSERT INTO ingredient_rules (product_id, inventory_id, amount) VALUES (?, ?, ?)',
+      await client.query(
+        'INSERT INTO ingredient_rules (product_id, inventory_id, amount) VALUES ($1, $2, $3)',
         [productId, rule.inventory_id, rule.amount]
       );
     }
-    await conn.commit();
+    await client.query('COMMIT');
     res.json({ success: true });
   } catch (err) {
-    await conn.rollback();
+    await client.query('ROLLBACK');
     res.status(500).json({ error: err.message });
   } finally {
-    conn.release();
+    client.release();
   }
 });
+
 app.get('/api/finance', async (req, res) => {
   const { start, end } = req.query;
   try {
     let query = 'SELECT * FROM finance';
     let params = [];
     if (start && end) {
-      query += ' WHERE date >= ? AND date <= ?';
+      query += ' WHERE date >= $1 AND date <= $2';
       params = [start, end];
     }
     query += ' ORDER BY id DESC';
-    const [rows] = await pool.query(query, params);
+    const { rows } = await pool.query(query, params);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.post('/api/finance', async (req, res) => {
   const { type, amount, description, date } = req.body;
   try {
-    const [result] = await pool.query(
-      'INSERT INTO finance (type, amount, description, date) VALUES (?, ?, ?, ?)',
+    const { rows: finRows } = await pool.query(
+      'INSERT INTO finance (type, amount, description, date) VALUES ($1, $2, $3, $4) RETURNING id',
       [type, amount, description, date]
     );
-    res.json({ id: result.insertId, type, amount, description, date });
+    res.json({ id: finRows[0].id, type, amount, description, date });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 app.post('/api/checkout', async (req, res) => {
   const { inventoryUpdates, financeLog } = req.body;
-  const conn = await pool.getConnection();
+  const client = await pool.connect();
   try {
-    await conn.beginTransaction();
+    await client.query('BEGIN');
     let finResId = financeLog?.id || null;
     if (financeLog) {
       if (financeLog.id) {
-        await conn.query(
-          'UPDATE finance SET type = ?, amount = ?, description = ?, date = ? WHERE id = ?',
+        await client.query(
+          'UPDATE finance SET type = $1, amount = $2, description = $3, date = $4 WHERE id = $5',
           [financeLog.type, financeLog.amount, financeLog.description, financeLog.date, financeLog.id]
         );
       } else {
-        const [finRes] = await conn.query(
-          'INSERT INTO finance (type, amount, description, date) VALUES (?, ?, ?, ?)',
+        const { rows: finRows } = await client.query(
+          'INSERT INTO finance (type, amount, description, date) VALUES ($1, $2, $3, $4) RETURNING id',
           [financeLog.type, financeLog.amount, financeLog.description, financeLog.date]
         );
-        finResId = finRes.insertId;
+        finResId = finRows[0].id;
       }
     }
     for (const u of inventoryUpdates) {
-      await conn.query('UPDATE inventory SET stock = ? WHERE id = ?', [u.stock, u.id]);
+      await client.query('UPDATE inventory SET stock = $1 WHERE id = $2', [u.stock, u.id]);
     }
-    await conn.commit();
+    await client.query('COMMIT');
     res.json({ success: true, financeId: finResId });
   } catch (err) {
-    await conn.rollback();
+    await client.query('ROLLBACK');
     res.status(500).json({ error: err.message });
   } finally {
-    conn.release();
+    client.release();
   }
 });
+
 app.post('/api/refund', async (req, res) => {
   const { inventoryRestorations, financeLog } = req.body;
-  const conn = await pool.getConnection();
+  const client = await pool.connect();
   try {
-    await conn.beginTransaction();
+    await client.query('BEGIN');
     if (financeLog) {
-      await conn.query(
-        'INSERT INTO finance (type, amount, description, date) VALUES (?, ?, ?, ?)',
+      await client.query(
+        'INSERT INTO finance (type, amount, description, date) VALUES ($1, $2, $3, $4)',
         [financeLog.type, financeLog.amount, financeLog.description, financeLog.date]
       );
     }
     for (const u of inventoryRestorations) {
-      await conn.query('UPDATE inventory SET stock = stock + ? WHERE id = ?', [u.amount, u.id]);
+      await client.query('UPDATE inventory SET stock = stock + $1 WHERE id = $2', [u.amount, u.id]);
     }
-    await conn.commit();
+    await client.query('COMMIT');
     res.json({ success: true });
   } catch (err) {
-    await conn.rollback();
+    await client.query('ROLLBACK');
     res.status(500).json({ error: err.message });
   } finally {
-    conn.release();
+    client.release();
   }
 });
-app.listen(PORT, () => {
-  console.log(`\nâœ… Es Salju Backend API berjalan di http://localhost:${PORT}`);
-  console.log(`   Uji koneksi: http://localhost:${PORT}/api/health\n`);
-});
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`\n✅ Es Salju Backend API berjalan di http://localhost:${PORT}`);
+    console.log(`   Uji koneksi: http://localhost:${PORT}/api/health\n`);
+  });
+}
+
+module.exports = app;
