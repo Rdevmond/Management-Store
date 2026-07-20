@@ -41,7 +41,7 @@ export default function POSCartPanel({
             return (
               <div key={item.product.id} className="py-3 border-b border-slate-100 last:border-0 animate-fade-in-fast">
                 <div className="flex items-center justify-between gap-2">
-                  {/* Name + price stacked on left */}
+
                   <div className="min-w-0 flex-1">
                     <p className="text-[13px] font-bold text-slate-800 leading-snug line-clamp-2">{item.product.name}</p>
                     <span className="text-sm font-black text-green-600 mt-0.5 block">{fmt(itemTotal)}</span>
@@ -65,7 +65,7 @@ export default function POSCartPanel({
                       ))}
                     </div>
                   </div>
-                  {/* Quantity controls + delete on right, vertically centered */}
+
                   <div className="flex items-center gap-2 shrink-0">
                     <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white shadow-sm">
                       <button

@@ -137,7 +137,6 @@ export default function useAppController(navigate) {
     triggerAlert('Anda telah keluar dari sistem.', 'info');
     navigate('/login');
   };
-  // Request a verification code for password reset
   const requestPasswordReset = async (username, email) => {
     if (!username || !email) {
       triggerAlert('Username dan email wajib diisi.', 'error');
@@ -161,7 +160,6 @@ export default function useAppController(navigate) {
     }
   };
 
-  // Verify the 4-digit code
   const verifyPasswordResetCode = async (username, email, code) => {
     if (!username || !email || !code) {
       triggerAlert('Kode verifikasi wajib diisi.', 'error');
@@ -181,7 +179,6 @@ export default function useAppController(navigate) {
     }
   };
 
-  // Confirm the verification code and set new password
   const confirmPasswordReset = async (username, email, code, newPassword) => {
     if (!username || !email || !code || !newPassword) {
       triggerAlert('Semua bidang wajib diisi.', 'error');
@@ -201,10 +198,7 @@ export default function useAppController(navigate) {
     }
   };
 
-  // Backward compatible alias (optional) – not used in UI now
   const handleForgotPassword = async () => {
-    // This alias retains old behavior for any legacy calls
-    // It simply requests a code and then immediately confirms with an empty code (will fail)
     return false;
   };
   const addUser = async (newUser) => {

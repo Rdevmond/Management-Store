@@ -30,7 +30,7 @@ export default function MainLayout({ controller }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
 
-  // Close sidebar on navigation on mobile
+
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [location.pathname]);
@@ -44,7 +44,6 @@ export default function MainLayout({ controller }) {
     <div className="bg-slate-900 min-h-screen">
       <div className={`flex-grow flex flex-col ${isAdmin ? 'md:flex-row' : ''} min-h-screen md:h-screen md:overflow-hidden font-sans bg-slate-50 w-full shadow-2xl relative`}>
         
-        {/* Mobile Header */}
         <div className="md:hidden sticky top-0 flex items-center justify-between px-5 py-4 bg-slate-900 text-white shadow-md z-50 shrink-0">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Logo" className="h-8 w-auto object-contain" />
@@ -54,7 +53,7 @@ export default function MainLayout({ controller }) {
           </button>
         </div>
 
-        {/* Backdrop for mobile */}
+
         {isSidebarOpen && (
           <div 
             className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 md:hidden"
@@ -62,7 +61,7 @@ export default function MainLayout({ controller }) {
           />
         )}
 
-        {/* Sidebar untuk Admin */}
+
         {isAdmin && (
           <aside className={`
             fixed md:relative top-0 right-0 md:right-auto md:left-0 h-full w-64 md:w-56 shrink-0 flex flex-col overflow-y-auto border-l md:border-l-0 md:border-r border-white/5 bg-slate-900 z-[60] transition-transform duration-300 ease-in-out
@@ -106,7 +105,7 @@ export default function MainLayout({ controller }) {
           </aside>
         )}
 
-        {/* Sidebar Darurat Kasir (hanya mobile drawer) */}
+
         {!isAdmin && isSidebarOpen && (
           <aside className={`
             fixed top-0 right-0 h-full w-64 shrink-0 flex flex-col overflow-y-auto border-l border-white/5 bg-slate-900 z-[60] transition-transform duration-300 ease-in-out md:hidden
@@ -135,7 +134,7 @@ export default function MainLayout({ controller }) {
           </aside>
         )}
 
-        {/* Topbar untuk Kasir (Desktop) */}
+
         {!isAdmin && (
           <header className="hidden md:flex items-center justify-between px-6 py-4 bg-slate-900 text-white shadow-md z-50 shrink-0">
             <div className="flex items-center gap-8">
@@ -163,7 +162,7 @@ export default function MainLayout({ controller }) {
           </header>
         )}
 
-        {/* Main Content Area */}
+
         <main className="flex-grow flex flex-col min-w-0 p-4 sm:p-5 md:p-7 overflow-y-auto h-auto md:h-full bg-slate-50 relative">
           <Outlet />
         </main>

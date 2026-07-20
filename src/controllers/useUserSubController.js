@@ -96,11 +96,9 @@ export default function useUserSubController(navigate, triggerAlert) {
   };
 
   const handleForgotPassword = async (username, email, newPassword) => {
-    // Legacy support for direct forgot password
     try {
       const res = await apiPost('/users/forgot-password', { username, email });
       if (res.success) {
-        // Since old flow resets immediately, we simulate it
         const res2 = await apiPost('/users/confirm-forgot', { username, email, code: '000000', newPassword });
         return res2.success;
       }

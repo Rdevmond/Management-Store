@@ -3,7 +3,7 @@ const productsRouter = express.Router();
 const rulesRouter = express.Router();
 const pool = require('../db');
 
-// --- Products Router ---
+
 productsRouter.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM products');
@@ -46,7 +46,7 @@ productsRouter.delete('/:id', async (req, res) => {
   }
 });
 
-// --- Ingredient Rules Router ---
+
 rulesRouter.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query(

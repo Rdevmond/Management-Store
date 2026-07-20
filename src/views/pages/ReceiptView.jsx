@@ -8,8 +8,6 @@ export default function ReceiptView() {
   const controller = useAppController(navigate);
   const fmt = (n) => 'Rp ' + Number(n).toLocaleString('id-ID');
 
-  // Dalam aplikasi nyata, kita akan fetch detail transaksi dari backend by ID
-  // Di sini kita simulasikan untuk memenuhi syarat Dynamic Route
   
   const handlePrint = () => {
     window.print();

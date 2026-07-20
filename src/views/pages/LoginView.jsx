@@ -6,7 +6,7 @@ const inputBase = "block w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-
 export default function LoginView({ controller }) {
   const [authMode, setAuthMode] = useState('login');
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
-  const [forgotStep, setForgotStep] = useState('request'); // 'request', 'verify', 'reset'
+  const [forgotStep, setForgotStep] = useState('request');
   const [forgotForm, setForgotForm] = useState({ username: '', email: '', code: '', newPassword: '', confirmPassword: '' });
   const [forgotSuccess, setForgotSuccess] = useState(false);
   const [testInboxUrl, setTestInboxUrl] = useState('');

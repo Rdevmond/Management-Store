@@ -112,7 +112,6 @@ function AppContent() {
               }
             />
             <Route path="struk/:id" element={<ReceiptView />} />
-            {/* Error 404 */}
             <Route path="*" element={<NotFoundView />} />
           </Route>
         </Routes>

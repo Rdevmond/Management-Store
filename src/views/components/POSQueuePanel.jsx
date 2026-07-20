@@ -58,7 +58,7 @@ export default function POSQueuePanel({
             const totalItemCount = order.items.reduce((s, i) => s + i.quantity, 0);
             return (
               <div key={order.id} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow animate-fade-in-fast">
-                {/* Header: label + badge */}
+
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
                     <span className="text-sm font-black text-slate-900 leading-tight block">{order.label}</span>
@@ -77,7 +77,7 @@ export default function POSQueuePanel({
                   </span>
                 </div>
 
-                {/* Items list */}
+
                 <div className="bg-slate-50 rounded-xl px-3 py-2.5 space-y-1 border border-slate-100 mb-3">
                   {order.items.map((item, idx) => {
                     const activeToppings = item.toppings 
@@ -103,7 +103,7 @@ export default function POSQueuePanel({
                   })}
                 </div>
 
-                {/* Footer: total + actions */}
+
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-base font-black text-slate-900">{fmt(order.total)}</span>
                   <div className="flex gap-1.5">

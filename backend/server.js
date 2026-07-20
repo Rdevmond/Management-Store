@@ -4,7 +4,6 @@ const cors = require('cors');
 const pool = require('./db');
 const nodemailer = require('nodemailer');
 const app = express();
-// In‑memory store for forgot‑password codes
 const forgotCodes = {};
 const PORT = process.env.PORT || 5113;
 app.use(cors({ origin: true, credentials: true }));
@@ -59,7 +58,6 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
-// Forgot password - generate 4-digit verification code & send to email
 app.post(['/api/forgot-password', '/api/users/forgot-password'], async (req, res) => {
   const { username, email } = req.body;
   if (!username || !email) return res.status(400).json({ error: 'Username and email required.' });
@@ -67,7 +65,6 @@ app.post(['/api/forgot-password', '/api/users/forgot-password'], async (req, res
     const [rows] = await pool.query('SELECT id FROM users WHERE username = ? AND email = ?', [username, email]);
     if (rows.length === 0) return res.status(404).json({ error: 'User not found.' });
     
-    // Generate 4-digit code as requested
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     forgotCodes[username] = { code, expires: Date.now() + 10 * 60 * 1000, email };
 
@@ -92,7 +89,6 @@ app.post(['/api/forgot-password', '/api/users/forgot-password'], async (req, res
     };
 
     if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      // Real SMTP configuration is present
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT) || 587,
@@ -100,10 +96,8 @@ app.post(['/api/forgot-password', '/api/users/forgot-password'], async (req, res
         auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
       });
       await transporter.sendMail(mailOptions);
-      console.log(`✉️ Real email sent successfully via SMTP to ${email}`);
       res.json({ success: true });
     } else {
-      // SMTP not configured - dynamic Ethereal Virtual SMTP Sandbox!
       try {
         const testAccount = await nodemailer.createTestAccount();
         const transporter = nodemailer.createTransport({
@@ -120,21 +114,16 @@ app.post(['/api/forgot-password', '/api/users/forgot-password'], async (req, res
           from: `"Es Salju Admin (Demo)" <${testAccount.user}>`
         });
         const testUrl = nodemailer.getTestMessageUrl(info);
-        console.log(`🔐 Verification code for ${username} (${email}): ${code}`);
-        console.log(`✉️ Dynamic Ethereal virtual inbox URL: ${testUrl}`);
         res.json({ success: true, testUrl });
       } catch (etherealErr) {
-        console.error('Ethereal sandbox creation failed:', etherealErr);
         res.status(500).json({ error: 'Gagal membuat email sandbox virtual.' });
       }
     }
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Verify 4-digit verification code before changing password
 app.post(['/api/verify-code', '/api/users/verify-code'], (req, res) => {
   const { username, email, code } = req.body;
   if (!username || !email || !code) {
@@ -154,7 +143,6 @@ app.post(['/api/verify-code', '/api/users/verify-code'], (req, res) => {
   res.json({ success: true });
 });
 
-// Confirm verification code and reset password directly
 app.post(['/api/confirm-forgot', '/api/users/confirm-forgot'], async (req, res) => {
   const { username, email, code, newPassword } = req.body;
   if (!username || !email || !code || !newPassword) return res.status(400).json({ error: 'All fields required.' });

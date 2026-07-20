@@ -25,7 +25,6 @@ export default function useFinanceSubController(triggerAlert, inventory) {
   }, [startDate, endDate]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshFinance();
   }, [startDate, endDate, refreshFinance]);
 
