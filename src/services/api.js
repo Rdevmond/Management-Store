@@ -15,13 +15,16 @@ api.interceptors.response.use(
     let errorMessage = 'Terjadi kesalahan server.';
     if (error.response) {
       if (error.response.data && error.response.data.error) {
-        errorMessage = error.response.data.error;
+        errorMessage = typeof error.response.data.error === 'string' 
+          ? error.response.data.error 
+          : error.response.data.error.message || JSON.stringify(error.response.data.error);
       } else if (typeof error.response.data === 'string') {
         const cleanError = error.response.data.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
         errorMessage = cleanError || `HTTP Error ${error.response.status}`;
       } else if (error.response.data && error.response.data.message) {
         errorMessage = error.response.data.message;
       }
+
     } else if (error.request) {
       errorMessage = 'Tidak ada respons dari server. Periksa koneksi Anda.';
     } else {
